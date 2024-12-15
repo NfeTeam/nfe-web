@@ -51,10 +51,17 @@
         height: 20vh; /* Height of 10vh */
         object-fit: cover; /* Crop the image to fit */
       }
+      .logo {
+        max-height: 40px;
+      }
 
   }
 
   @media (min-width: 577px){
+    .logo {
+      max-height: 80px;
+      width: auto;
+    }
 
     .nav-link {
       font-size: 1.3rem; /* Adjust the font size as needed */
