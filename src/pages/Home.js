@@ -1,116 +1,211 @@
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
 import BF from "../images/building-filled.png";
 import BNF from "../images/building.png";
-import HomeSlogan from "../images/HomeSlogan.jpg";
 import Background from "../images/background-page-4.jpg";
+import "../styles/Home.css";
+import { db, collection, getDoc, doc } from "../components/firebase";
+import getMediaUrl from "../components/MediaUrl";
 
+const ourServices = [
+  {
+    icon: BF,
+    mainService: "ARCHITECTURE BIM SERVICES",
+    subServices: [
+      "VDC / BIM COORDINATION / CSD",
+      "POINT CLOUD SCAN TO BIM",
+    ],
+  },
+  {
+    icon: BNF,
+    mainService: "STRUCTURAL BIM SERVICES",
+    subServices: ["4D SIMULATION / RENDERING", "VR / AR VDC"],
+  },
+  {
+    icon: BF,
+    mainService: "MEP BIM SERVICES",
+    subServices: [
+      "5D COST / QUANTITY TAKE-OFF",
+      "BIM DOCUMENTATION",
+    ],
+  },
+];
 const Home = () => {
-  return (
-    <div>
-      <div className="slogan-container">
-        <img src={HomeSlogan} className="home-slogan" alt="Home Slogan" />
-        <div className="overlay-text">Engineering Tomorrow's Solutions, Today!!</div>
-      </div>
+  const [slides, setSlides] = useState([]); // Initialize slides state
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const videoRef = useRef(null);
+  const [homeData, setHomeData] = useState([])
+  useEffect(() => {
 
-      <section className="bg-flowing text-white py-5">
-        <div className="container">
-          <h1 className="display-4 heading-home-1">New Fact Engineering</h1>
-          <p className="lead">
-            Building Information Modeling (BIM) technology revolutionizes the
-            architecture, engineering, and construction (AEC) industries by
-            providing a comprehensive digital representation of a building's
-            physical and functional characteristics. Utilizing 3D modeling
-            software, BIM integrates multi-disciplinary data to create detailed,
-            parametric models that encompass architectural, structural, and MEP
-            (mechanical, electrical, plumbing) systems. This collaborative
-            approach enhances project visualization, coordination, and
-            decision-making, reducing errors and inefficiencies. Advanced
-            capabilities such as 4D simulation (time scheduling), 5D cost
-            estimation, and point cloud integration from laser scans further
-            streamline construction workflows. BIM's ability to manage building
-            assets throughout their lifecycle supports sustainable practices and
-            improves facility management, making it an indispensable tool for
-            modern construction projects.
-          </p>
-          <Link
-            to="/services"
-            className="btn btn-light btn-lg mt-3 button-home-1"
-          >
-            Explore Our Services
-          </Link>
-        </div>
-      </section>
-      <div style={{position:"relative"}}>
-      <div
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundImage: `url(${Background})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundAttachment: "fixed", // This makes the background fixed
-          opacity: 0.3, // Adjust opacity as needed
-          zIndex: -1, // Ensure the background is behind content
-          animation: "moveBackground 20s ease-in-out infinite",
-        }}
-      ></div>
-       <section className="py-5">
-      
-      <div className="container">
-        <div className="row">
-          <div className="col-md-4 mb-4">
-            <div className="text-center">
-              <img src={BF} alt="building"></img>
+    const fetchSlidesData = async () => {
+      try {
+        const homeDataRef = doc(collection(db, "homeContent"), "homeData");
+        const homeDataDoc = await getDoc(homeDataRef);
+        const homeData = homeDataDoc.data();
+
+        const homeMediaRef = doc(collection(db, "homeContent"), "homeMedia");
+        const homeMediaDoc = await getDoc(homeMediaRef);
+        const homeMedia = homeMediaDoc.data().media;
+
+        // Combine homeData and homeMedia into slides
+        const combinedSlides = homeMedia.map((media, index) => ({
+          type: media.type,
+          src: getMediaUrl(media.url, media.type),
+          alt: homeData.title + " Slide " + (index + 1),
+        }));
+
+        setSlides(combinedSlides); // Update slides state
+        setHomeData(homeData)
+      } catch (error) {
+        console.error("Error fetching slides data: ", error);
+      }
+    };
+
+    fetchSlidesData();
+
+    let timer;
+
+    const startTimer = (delay) => {
+      timer = setInterval(() => {
+        setCurrentSlide((prevSlide) => (prevSlide + 1) % slides.length);
+      }, delay);
+    };
+
+    const handleSlideChange_2 = () => {
+      clearInterval(timer);
+      if (slides.length === 0) {
+        return
+      }
+      if (slides[currentSlide].type === "video") {
+        const video = videoRef.current;
+        if (video) {
+          video.onended = () => {
+            setCurrentSlide((prevSlide) => (prevSlide + 1) % slides.length);
+          };
+          video.play();
+        }
+      } else {
+        startTimer(5000);
+      }
+    };
+
+    const handleSlideChange = () => {
+      clearInterval(timer);
+      if (slides.length === 0) {
+        return;
+      }
+      if (slides[currentSlide].type === "video") {
+        const video = videoRef.current;
+        if (video) {
+          video.onloadeddata = () => {
+            video.play();
+          };
+          video.onerror = () => {
+            // Skip to the next slide if video fails to load
+            setCurrentSlide((prevSlide) => (prevSlide + 1) % slides.length);
+          };
+          video.load(); // Attempt to load the video
+        }
+      } else {
+        startTimer(5000);
+      }
+    };
+
+    handleSlideChange();
+
+    return () => clearInterval(timer);
+  }, [currentSlide, slides.length]); // Added slides.length to dependencies
+
+  const handleDotClick = (index) => {
+    setCurrentSlide(index);
+  };
+  if (slides.length === 0) {
+    return <div>Loading...</div>; // Show a loading message or spinner
+  } else {
+    console.log(slides)
+
+    return (
+      <div className="home-container">
+        <section className="hero-section">
+          <div className="slogan-container">
+            {slides[currentSlide].type === "image" ? (
+              <img
+                src={slides[currentSlide].src || "/placeholder.svg"}
+                className="home-slogan"
+                alt={slides[currentSlide].alt}
+              />
+            ) : (
+              <video
+                ref={videoRef}
+                src={slides[currentSlide].src}
+                className="home-slogan"
+                alt={slides[currentSlide].alt}
+                muted
+                playsInline
+              />
+            )}
+            <div className="overlay-text">
+              Engineering Tomorrow's Solutions, Today!
             </div>
-            <div className="card text-center heading-home-2">
-              ARCHITECTURE BIM SERVICES
-            </div>
-            <div className="card text-center heading-home-2 ">
-              VDC / BIM COORDINATION / CSD
-            </div>
-            <div className="card text-center heading-home-2 ">
-              POINT CLOUD SCAN TO BIM
+            <div className="dot-container">
+              {slides.map((_, index) => (
+                <span
+                  key={index}
+                  className={`dot ${index === currentSlide ? "active" : ""}`}
+                  onClick={() => handleDotClick(index)}
+                ></span>
+              ))}
             </div>
           </div>
-          <div className="col-md-4 mb-4">
-            <div className="text-center">
-              <img src={BNF} alt="building"></img>
-            </div>
-            <div className="card text-center heading-home-2 ">
-              STRUCTURAL BIM SERVICES
-            </div>
-            <div className="card text-center heading-home-2 ">
-              4D SIMULATION / RENDERING
-            </div>
-            <div className="card text-center heading-home-2 ">
-              VR / AR VDC
+        </section>
+
+        <section className="intro-section bg-flowing text-white py-5 my-3">
+          <div className="container">
+            <h1 className="heading-home-1">
+              <strong>{homeData.title}</strong>
+            </h1>
+            <p className="lead">
+              {homeData.description}
+            </p>
+            <Link
+              to="/services"
+              className="btn btn-light btn-lg mt-3 button-home-1"
+            >
+              Explore Our Services
+            </Link>
+          </div>
+        </section>
+
+        <section className="services-section">
+          <div className="services-background" style={{ backgroundImage: `url(${Background})` }}></div>
+          <div className="services-content">
+            <h2 className="services-title">Our Services</h2>
+            <div className="services-grid">
+              {ourServices.map((service, index) => (
+                <div className="service-card" key={index}>
+                  <div className="service-icon">
+                    <img
+                      src={service.icon || "/placeholder.svg"}
+                      alt="service icon"
+                      className="service-img"
+                    />
+                  </div>
+                  <div className="service-content">
+                    <h3 className="service-title">{service.mainService}</h3>
+                    {service.subServices.map((subService, idx) => (
+                      <div className="sub-service" key={idx}>
+                        {subService}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
             </div>
           </div>
-          <div className="col-md-4 mb-4">
-            <div className="text-center">
-              <img src={BF} alt="building"></img>
-            </div>
-            <div className="card text-center heading-home-2 ">
-              MEP BIM SERVICES
-            </div>
-            <div className="card text-center heading-home-2 ">
-              5D COST / QUANTITY TAKE-OFF
-            </div>
-            <div className="card text-center heading-home-2 ">
-              BIM DOCUMENTATION
-            </div>
-          </div>
-        </div>
+        </section>
       </div>
-    </section>
-      </div>
-     
-    </div>
-  );
+    );
+  }
 };
 
 export default Home;

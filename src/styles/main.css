@@ -1,0 +1,299 @@
+@media (max-width: 576px) { /* Bootstrap's mobile breakpoint */
+    
+  .logo {
+    max-height: 40px;
+  }
+
+}
+
+@media (min-width: 577px){
+.logo {
+  max-height: 80px;
+  width: auto;
+}
+
+.nav-link {
+  font-size: 1.3rem; /* Adjust the font size as needed */
+  font-weight: 500;  /* Optional: Makes the text slightly bolder */
+} 
+
+
+}
+
+
+
+
+.custom-container {
+max-width: 90%;
+margin: 0 auto;
+
+}
+
+.dot-container {
+position: absolute;
+bottom: 10px;
+left: 50%;
+transform: translateX(-50%);
+display: flex;
+z-index: 1;
+}
+
+.dot {
+width: 10px;
+height: 10px;
+margin: 0 5px;
+background-color: rgba(255, 255, 255, 0.5); /* Semi-transparent white */
+border-radius: 50%;
+cursor: pointer;
+transition: background-color 0.3s ease; /* Smooth transition */
+}
+
+.dot.active {
+background-color: white; /* Solid white for active dot */
+}
+
+
+
+
+
+
+
+
+
+
+/* Custom CSS to improve the navbar appearance */
+.navbar {
+background-color: #343a40;
+}
+
+.navbar-brand img {
+max-height: 40px; /* Adjust logo size */
+}
+
+.navbar-nav .nav-link {
+font-size: 1.3rem; /* Adjust font size */
+padding-left: 15px; /* Add padding for spacing */
+padding-right: 15px;
+}
+
+
+
+.navbar-nav .nav-item .nav-link {
+color: #ffffff; /* Default text color */
+transition: color 0.3s ease; /* Add transition for smooth color change */
+}
+
+/* Mobile view improvements */
+@media (max-width: 576px) {
+.navbar-nav .nav-link {
+font-size: 1.3rem; /* Reduce font size for mobile */
+padding-left: 10px;
+padding-right: 10px;
+}
+
+.navbar-brand img {
+max-height: 50px; /* Reduce logo size on mobile */
+}
+
+
+
+
+
+.navbar-nav {
+text-align: center; /* Center align links on mobile */
+}
+.brand-name{
+font-size: 1.2rem;
+}
+}
+
+/* Desktop view improvements */
+@media (min-width: 577px) {
+.navbar-nav .nav-link {
+font-size: 1.3rem; /* Larger font size on desktop */
+padding-left: 20px;
+padding-right: 20px;
+}
+
+.navbar-brand img {
+max-height: 60px; /* Increase logo size on desktop */
+}
+
+.navbar-nav .nav-item:hover .nav-link {
+color: #f8f9fa; /* Subtle hover effect for desktop */
+}
+.brand-name{
+font-size: 1.3rem;
+}
+}
+
+/* Adjust navbar items' spacing to avoid crowding */
+.navbar-nav {
+margin-left: auto; /* Align the nav items to the right */
+
+}
+
+.navbar-nav .nav-item {
+margin: 0 10px; /* Add margin to each item */
+}
+
+.navbar-brand {
+display: flex;
+align-items: center;
+}
+
+.navbar-collapse {
+justify-content: flex-end; /* Align links to the right */
+}
+
+
+
+
+
+
+
+
+
+/* Optional: Add a darker shade for hover effect */
+.card-title:hover {
+  background: #0088cc;
+  transform: translateX(5px);
+}
+
+/* Optional: Add a pseudo-element for the folded corner effect */
+.card-title::after {
+  content: '';
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  width: 15px;
+  height: 15px;
+  background: #0088cc;
+  clip-path: polygon(100% 0, 100% 100%, 0 100%);
+}
+
+/* Services Page Specific Styles */
+.services-container {
+  position: relative;
+  padding: 4rem 0;
+}
+
+/* Card Styles */
+.card {
+  border: none;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.95);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  overflow: hidden;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+}
+
+.card-title {
+  font-size: 1.6rem;
+  font-weight: 600;
+  text-align: center;
+  padding: 0.5rem;
+  background: linear-gradient(135deg, #0088cc, #00aeff);
+  color: white;
+  margin: 0;
+  position: relative;
+}
+
+.card-body {
+  padding: 1.8rem;
+  font-size: 1.1rem; /* Increased base font size */
+  line-height: 1.8; /* Improved line height for readability */
+}
+
+/* Card Content Animation */
+.card-content {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  opacity: 0;
+  max-height: 0;
+  overflow: hidden;
+}
+
+.card-content.expanded {
+  opacity: 1;
+  max-height: 2000px;
+}
+
+/* List Styles */
+.list-unstyled li {
+  margin-bottom: 1.2rem;
+  padding-left: 1.8rem;
+  position: relative;
+  line-height: 1.8;
+  font-size: 1.1rem;
+  list-style: none; /* Remove default bullets */
+}
+
+.list-unstyled li:before {
+  content: none; /* Remove the bullet point */
+}
+
+/* Media Section */
+.card-img-top {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+iframe.card-img-top {
+  border: none;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .card-title {
+    font-size: 1.2rem;
+    padding: 0.8rem;
+  }
+
+  .card-body {
+    padding: 1.2rem;
+    font-size: 1rem; /* Slightly smaller on mobile but still readable */
+  }
+
+  .list-unstyled li {
+    font-size: 1rem;
+    margin-bottom: 1rem;
+    line-height: 1.6;
+  }
+}
+
+/* Background Animation */
+@keyframes moveBackground {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.active-nav-link {
+  color: #00d9fa !important;
+}
+
+
+.whatsapp-bubble {
+  animation: bounce 1s infinite alternate;
+}
+
+@keyframes bounce {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-10px);
+  }
+}

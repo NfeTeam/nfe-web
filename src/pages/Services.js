@@ -1,51 +1,119 @@
 import React, { useEffect, useState } from "react";
-import { db, collection, getDocs, doc, getDoc } from "../components/firebase"; // Firebase methods
+import { db, collection, getDocs, doc, getDoc } from "../components/firebase";
 import Background from "../images/background-page-2.jpg";
-const getImageUrl = (url) => {
-  if (!url) {
-    console.warn("Invalid image URL", url);
-    return "";
-  }
-
-  const match = url.match(/(?:id=|\/d\/)([a-zA-Z0-9_-]+)/);
-  if (match && match[1]) {
-    return `https://drive.google.com/thumbnail?id=${match[1]}&sz=w1000&random=${Math.random()}`;
-  }
-
-  return url;
-};
+import getMediaUrl from "../components/MediaUrl";
 
 const Services = () => {
-  const [chartImageUrl, setChartImageUrl] = useState(null); // Set as null to trigger re-render only after data is loaded
-  const [servicesData, setServicesData] = useState([]); // State to hold service data
+  const [chartImageUrl, setChartImageUrl] = useState(null);
+  const [servicesData, setServicesData] = useState([]);
+  const [expandedRow, setExpandedRow] = useState(0);
+  const [itemsPerRow, setItemsPerRow] = useState(3); // Default to large screen size
+  const [bimData, setBimData] = useState(null);
 
+  useEffect(() => {
+    // Add styles to head
+    const style = document.createElement('style');
+    style.textContent = `
+      .card-content {
+        transition: all 0.7s ease-in-out;
+        opacity: 0;
+        max-height: 0;
+        overflow: hidden;
+      }
+      
+      .card-content.expanded {
+        opacity: 1;
+        max-height: 2000px; /* Adjust this value based on your maximum content height */
+      }
+      
+      .card {
+        transition: all 0.7s ease-in-out;
+      }
+      
+      .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+    `;
+    document.head.appendChild(style);
+    return () => document.head.removeChild(style);
+  }, []);
+  // Function to determine items per row based on window width
+  const updateItemsPerRow = () => {
+    const width = window.innerWidth;
+    if (width >= 992) { // lg breakpoint
+      setItemsPerRow(3);
+    } else if (width >= 768) { // md breakpoint
+      setItemsPerRow(2);
+    } else { // sm breakpoint
+      setItemsPerRow(1);
+    }
+  };
 
+  // Initial setup and window resize listener
+  useEffect(() => {
+    updateItemsPerRow();
+    const handleResize = () => {
+      updateItemsPerRow();
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
-  // Fetch chart image URL from Firebase
   useEffect(() => {
     const fetchChartImage = async () => {
-      const chartDocRef = doc(db, "additionalImages", "chart"); // Document reference for chart image
+      const chartDocRef = doc(db, "additionalImages", "chart");
       const chartDocSnap = await getDoc(chartDocRef);
-      
+
       if (chartDocSnap.exists()) {
-        const updatedURL = getImageUrl(chartDocSnap.data().imageUrl);
-        setChartImageUrl(updatedURL); // Set chart image URL from Firestore
+        const updatedURL = getMediaUrl(chartDocSnap.data().imageUrl, "image");
+        setChartImageUrl(updatedURL);
       } else {
         console.warn("No chart image found in Firestore.");
-        setChartImageUrl(null); // Set null if no image is found
+        setChartImageUrl(null);
       }
     };
 
-    // Fetch service data from Firebase
     const fetchServicesData = async () => {
       const servicesQuerySnapshot = await getDocs(collection(db, "services"));
-      const services = servicesQuerySnapshot.docs.map(doc => doc.data()); // Extract data from Firestore
+      const services = servicesQuerySnapshot.docs.map((doc) => doc.data());
       setServicesData(services);
     };
 
+    const fetchBIMData = async () => {
+      try {
+        const docRef = doc(db, "bimTechnology", "bimTechnologyData");
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          setBimData(docSnap.data());
+        } else {
+          console.warn("No BIM Technology data found.");
+        }
+      } catch (error) {
+        console.error("Error fetching BIM Technology data: ", error);
+      } finally {
+
+      }
+    };
+
+    fetchBIMData();
     fetchChartImage();
     fetchServicesData();
-  }, []); // Empty dependency array ensures this runs only once on mount
+
+  }, []);
+
+  // Function to determine if a service should show its content
+  const shouldShowContent = (index) => {
+    const rowIndex = Math.floor(index / itemsPerRow);
+    return rowIndex === expandedRow;
+  };
+
+  // Function to handle row expansion
+  const handleRowClick = (index) => {
+    const rowIndex = Math.floor(index / itemsPerRow);
+    setExpandedRow(rowIndex);
+  };
 
   return (
     <div style={{ position: "relative" }}>
@@ -59,54 +127,60 @@ const Services = () => {
           backgroundImage: `url(${Background})`,
           backgroundSize: "cover",
           backgroundPosition: "center",
-          backgroundAttachment: "fixed", // This makes the background fixed
-          opacity: 0.3, // Adjust opacity as needed
-          zIndex: -1, // Ensure the background is behind content
+          backgroundAttachment: "fixed",
+          opacity: 0.3,
+          zIndex: -1,
           animation: "moveBackground 20s ease-in-out infinite",
         }}
       ></div>
-      
+
       <div className="custom-container py-5">
         <h1 className="text-center mb-5">Our BIM Services</h1>
-        
+
         {/* Why Choose BIM Technology Card */}
         <div className="row my-5">
-          <div className="col-md-4">
-            <div className="card rounded">
+          {/* Why Choose BIM Technology Card */}
+          <div className="col-md-4 d-flex">
+            <div className="card rounded h-100">
               <h3 className="text-center card-title">Why Choose BIM Technology?</h3>
               <div className="card-body">
                 <ul className="list-unstyled fs-6">
-                  <li><strong>1. Enhanced Collaboration:</strong> BIM facilitates real-time collaboration among architects, engineers, and contractors, improving coordination and reducing errors.</li>
-                  <li><strong>2. Improved Visualization:</strong> 3D models created with BIM allow stakeholders to visualize the project more accurately, aiding in better decision-making.</li>
-                  <li><strong>3. Efficient Design and Planning:</strong> BIM enables efficient design iterations and planning, optimizing construction processes and reducing project timelines.</li>
-                  <li><strong>4. Cost Savings:</strong> By detecting clashes and inconsistencies early, BIM helps in minimizing costly changes during construction.</li>
-                  <li><strong>5. Lifecycle Management:</strong> BIM supports the entire lifecycle of a building, from design and construction to operation and maintenance, improving facility management.</li>
+                  {bimData?.whyChoose.map((item, index) => (
+                    <li key={index}>
+                      <strong>{index + 1}. {item.split(":")[0]}:</strong> {item.split(":")[1]}
+                    </li>
+                  ))}
                 </ul>
               </div>
             </div>
           </div>
 
           {/* Chart Image */}
-          <div className="col-md-4">
-            {chartImageUrl ? (
-              <img src={chartImageUrl} alt="BIM Chart" className="img-fluid" />
-            ) : (
-              <p>No chart image available.</p> // Display a fallback message if the image is not available
-            )}
+          <div className="col-md-4 d-flex">
+            <div className="card rounded h-100">
+              {chartImageUrl ? (
+                <img
+                  src={chartImageUrl}
+                  alt="BIM Chart"
+                  className="img-fluid"
+                />
+              ) : (
+                <p className="text-center">No chart image available.</p>
+              )}
+            </div>
           </div>
 
           {/* Advantages of BIM Technology Card */}
-          <div className="col-md-4">
-            <div className="card rounded">
+          <div className="col-md-4 d-flex">
+            <div className="card rounded h-100">
               <h3 className="text-center card-title">Advantages of BIM Technology</h3>
               <div className="card-body">
                 <ul className="list-unstyled fs-6">
-                  <li><strong>• Accuracy and Precision:</strong> BIM models provide detailed, accurate representations of building components and systems, reducing errors in construction.</li>
-                  <li><strong>• Clash Detection:</strong> BIM enables clash detection among various building systems, such as mechanical, electrical, and plumbing (MEP), early in the design phase, avoiding conflicts during construction.</li>
-                  <li><strong>• Quantification and Cost Estimation:</strong> BIM facilitates automated quantity takeoffs and cost estimations, enhancing budgeting accuracy.</li>
-                  <li><strong>• Sustainability:</strong> BIM allows for better analysis of energy efficiency and environmental impact, promoting sustainable building practices.</li>
-                  <li><strong>• Improved Communication:</strong> BIM fosters clearer communication through visualizations, improving understanding among project teams and stakeholders.</li>
-                  <li>In summary, adopting BIM technology offers multiple benefits, from enhanced collaboration and visualization to cost savings and sustainability, making it a valuable choice for modern construction projects.</li>
+                  {bimData?.advantages.map((item, index) => (
+                    <li key={index}>
+                      <strong>• {item.split(":")[0]}:</strong> {item.split(":")[1]}
+                    </li>
+                  ))}
                 </ul>
               </div>
             </div>
@@ -114,20 +188,61 @@ const Services = () => {
         </div>
 
         {/* Services List */}
+        {/* Services List */}
         <div className="row my-5">
           {servicesData.map((service, index) => (
-            <div className="col-md-4 mb-4" key={index}>
-              <div className="card rounded">
-                <h2 className="card-title bg-primary text-white text-center rounded">{service.title}</h2>
-                <div className="card-body bg-light">
-                  <p>{service.description}</p>
-                  <ul className="list-unstyled fs-5 px-3">
-                    {service.items.map((item, itemIndex) => (
-                      <li key={itemIndex}>
-                        <i className="fas fa-wrench"></i> {item}
-                      </li>
-                    ))}
-                  </ul>
+            <div
+              key={index}
+              className="col-lg-4 col-md-6 col-sm-12 d-flex mb-4"
+              onClick={() => handleRowClick(index)}
+              style={{ cursor: 'pointer' }}
+            >
+              <div className="card rounded w-100 h-100">
+                {/* Title Section */}
+                <div
+                  className="text-center card-title bg-primary text-white mb-0"
+                  style={{ padding: "0px" }}
+                >
+                  {service.title}
+                </div>
+
+                {/* Content section with smooth transition */}
+                <div className={`card-content ${shouldShowContent(index) ? 'expanded' : ''}`}>
+                  {/* Media Section */}
+                  {service.type === "video" ? (
+                    <iframe
+                      src={getMediaUrl(service.imageUrl, "video")}
+                      title={service.title}
+                      className="card-img-top"
+                      style={{
+                        height: "200px",
+                        objectFit: "cover",
+                        width: "100%",
+                        pointerEvents: 'auto'
+                      }}
+                      allowFullScreen
+                    />
+                  ) : (
+                    <img
+                      src={getMediaUrl(service.imageUrl, "image")}
+                      alt={`${service.title}`}
+                      className="card-img-top"
+                      style={{
+                        objectFit: "cover",
+                        maxHeight: "200px",
+                      }}
+                    />
+                  )}
+
+                  {/* Text Content */}
+                  <div className="card-body p-3">
+                    <p>{service.description}</p>
+                    <ul className="list-unstyled fs-6">
+                      {service.items.map((item, i) => (
+                        <li key={i}>🛠 {item}</li>
+                      ))}
+                    </ul>
+                  </div>
                 </div>
               </div>
             </div>
@@ -141,196 +256,3 @@ const Services = () => {
 export default Services;
 
 
-
-
-
-/* import React from "react";
-import chartImage from "../images/chart.jpg";
-import Background from "../images/background-page-2.jpg";
-
-const servicesData = [
-  {
-    title: "Architecture BIM Services",
-    description:
-      "We specialize in delivering high-standard architectural BIM modeling and shop drawing services that adhere to industry-leading standards.",
-    items: [
-      "All Architectural 3D BIM Modelling",
-      "Architectural Family Creation",
-      "All Architectural Shop Drawing",
-      "Precast Details Drawing",
-      "Fabrication Shop Drawing",
-    ],
-  },
-  {
-    title: "Structural BIM Services",
-    description:
-      "We specialize in delivering high-standard Structural BIM modeling and shop drawing services that adhere to industry-leading standards.",
-    items: [
-      "All Structural 3D BIM Modelling",
-      "Structural Family Creation",
-      "All Structural Shop Drawing",
-      "Steel Structure Shop Drawing",
-      "Precast Details Drawing",
-    ],
-  },
-  {
-    title: "MEP BIM Services",
-    description:
-      "We specialize in delivering high-standard MEP BIM modeling and shop drawing services that adhere to industry-leading standards.",
-    items: [
-      "All MEP 3D BIM Modelling",
-      "MEP Family Creation",
-      "All MEP Shop Drawing",
-      "Fabrication Shop Drawing",
-      "MEP Construction Drawing",
-    ],
-  },
-  {
-    title: "VDC / BIM Coordination / CSD",
-    description:
-      "We specialize in providing top-tier CSD (Combined Service Drawing), BIM Coordination, and VDC (Virtual Design and Construction) services, meticulously adhering to industry-leading standards.",
-    items: [
-      "VDC BIM Meeting",
-      "BIM Coordination",
-      "Clash Detection & Report",
-      "RFI Preparation",
-      "CSD [Combined Services Drawing]",
-    ],
-  },
-  {
-    title: "NEW",
-    description: "NEW",
-    items: ["1", "2", "3", "4", "5"],
-  },
-];
-const Services = () => {
-  return (
-    <div style={{ position: "relative" }}>
-    <div
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundImage: `url(${Background})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundAttachment: "fixed", // This makes the background fixed
-          opacity: 0.3, // Adjust opacity as needed
-          zIndex: -1, // Ensure the background is behind content
-          animation: "moveBackground 20s ease-in-out infinite",
-        }}
-      ></div>
-    <div className="container py-5">
-      
-      <h1 className="text-center mb-5">Our BIM Services</h1>
-      <div className="row my-5">
-        <div className="col-md-4">
-          <div className="card rounded">
-          <h3 className="text-center card-title">Why Choose BIM Technology?</h3>
-            <div className="card-body">
-              <ul className="list-unstyled fs-6">
-                <li>
-                  <strong> 1.Enhanced Collaboration: </strong> BIM facilitates
-                  real-time collaboration among architects, engineers, and
-                  contractors, improving coordination and reducing errors.
-                </li>
-                <li>
-                  <strong> 2.Improved Visualization: </strong> 3D models created
-                  with BIM allow stakeholders to visualize the project more
-                  accurately, aiding in better decision-making.
-                </li>
-                <li>
-                  <strong> 3.Efficient Design and Planning: </strong> BIM
-                  enables efficient design iterations and planning, optimizing
-                  construction processes and reducing project timelines.
-                </li>
-                <li>
-                  <strong> 4.Cost Savings: </strong> By detecting clashes and
-                  inconsistencies early, BIM helps in minimizing costly changes
-                  during construction.
-                </li>
-                <li>
-                  <strong> 5.Lifecycle Management: </strong> BIM supports the
-                  entire lifecycle of a building, from design and construction
-                  to operation and maintenance, improving facility management.
-                </li>
-              </ul>
-            </div>
-          </div>
-        </div>
-        <div className="col-md-3">
-          <img src={chartImage} alt="nil" className="img-fluid"></img>
-        </div>
-        <div className="col-md-5">
-        <div className="card rounded">
-          <h3 className="text-center card-title">Advantages of BIM Technology</h3>
-            <div className="card-body">
-            <ul className="list-unstyled fs-6">
-            <li>
-              <strong>•Accuracy and Precision: </strong>BIM models provide
-              detailed, accurate representations of building components and
-              systems, reducing errors in construction.
-            </li>
-            <li>
-              <strong> •Clash Detection: </strong> BIM enables clash detection
-              among various building systems, such as mechanical, electrical,
-              and plumbing (MEP), early in the design phase, avoiding conflicts
-              during construction.
-            </li>
-            <li>
-              <strong> •Quantification and Cost Estimation:</strong> BIM
-              facilitates automated quantity takeoffs and cost estimations,
-              enhancing budgeting accuracy.
-            </li>
-            <li>
-              <strong> •Sustainability: </strong> BIM allows for better analysis
-              of energy efficiency and environmental impact, promoting
-              sustainable building practices.
-            </li>
-            <li>
-              <strong> •Improved Communication: </strong> BIM fosters clearer
-              communication through visualizations, improving understanding
-              among project teams and stakeholders.
-            </li>
-            <li>
-              In summary, adopting BIM technology offers multiple benefits, from
-              enhanced collaboration and visualization to cost savings and
-              sustainability, making it a valuable choice for modern
-              construction projects.
-            </li>
-          </ul>
-            </div>
-          </div>
-          
-        </div>
-      </div>
-      <div className="row my-5">
-        {servicesData.map((service, index) => (
-          <div className="col-md-6 mb-4" key={index}>
-            <div className="card rounded">
-              <h2 className="card-title bg-primary text-white text-center rounded">
-                {service.title}
-              </h2>
-              <div className="card-body bg-light">
-                <p>{service.description}</p>
-                <ul className="list-unstyled fs-5 px-3">
-                  {service.items.map((item, itemIndex) => (
-                    <li key={itemIndex}>
-                      <i className="fas fa-wrench"></i> {item}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </div>
-        ))}
-      </div>
-    </div>
-    </div>
-  );
-};
-
-export default Services;
-*/
