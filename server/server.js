@@ -4,12 +4,15 @@ const multer = require('multer');
 const path = require('path');
 const cors = require('cors');
 const fs = require('fs');
+const { all } = require('axios');
 require('dotenv').config();
 
 const app = express();
 const port = 5000;
+const allowedOrigins = ['http://localhost:3000', 'https://nfe-web-inky.vercel.app'];
+
 app.use(cors({
-    origin: 'http://localhost:3000', // Allow only your frontend domain
+    origin: allowedOrigins, // Allow only your frontend domain
     methods: ['GET', 'POST'], // Allowed methods
     allowedHeaders: ['Content-Type'] // Allowed headers
   }));
