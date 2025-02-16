@@ -1,0 +1,173 @@
+
+
+/* Container Layout */
+.careers-container {
+  display: flex;
+  flex-direction: row;
+  height: 100vh;
+}
+
+@media (max-width: 768px) {
+  .careers-container {
+    flex-direction: column;
+    height: auto;
+  }
+
+  .left, .middle, .right {
+    border-right: none;
+    border-bottom: 1px solid #ccc;
+    flex: none;
+    padding: 15px;
+  }
+
+  .middle {
+    order: 1;
+  }
+
+  .right {
+    order: 2;
+  }
+
+  .header {
+    font-size: 1.2em;
+  }
+
+  .formGroup label {
+    font-size: 0.9em;
+  }
+
+  .submitButton {
+    padding: 8px;
+    font-size: 1em;
+  }
+}
+
+
+/* Left Section */
+.left {
+  flex: 1;
+  border-right: 1px solid #ccc;
+  padding: 20px;
+  background-color: #f8f9fa;
+}
+
+
+
+/* Middle Section */
+.middle {
+  flex: 2;
+  border-right: 1px solid #ccc;
+  padding: 20px;
+  background-color: #ffffff;
+}
+
+
+
+/* Right Section */
+.right {
+  flex: 1;
+  padding: 20px;
+  background-color: #f8f9fa;
+}
+
+/* Headers */
+.header {
+  font-size: 1.5em;
+  margin-bottom: 15px;
+  color: #0073b1;
+}
+
+/* Search Bar */
+.searchBar {
+  width: 100%;
+  padding: 10px;
+  margin-bottom: 20px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+/* Job List */
+.jobList {
+  list-style-type: none;
+  padding: 0;
+}
+
+.jobItem {
+  padding: 15px;
+  cursor: pointer;
+  border-bottom: 1px solid #ccc;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  background-color: #ffffff;
+  transition: background-color 0.3s;
+}
+
+.jobItem:hover {
+  background-color: #e6f7ff;
+}
+
+.jobTitle {
+  font-size: 1.2em;
+  margin: 0 0 5px 0;
+  color: #0073b1;
+}
+
+.jobShortDesc {
+  font-size: 0.9em;
+  color: #555;
+}
+
+.noJobs {
+  color: #888;
+}
+
+/* Job Details */
+.jobDetails {
+  padding: 10px;
+  background-color: #f8f9fa;
+  border-radius: 5px;
+}
+
+.jobDetailsTitle {
+  font-size: 1.5em;
+  margin-bottom: 10px;
+  color: #0073b1;
+}
+
+.jobDetailsDesc {
+  font-size: 1em;
+  color: #333;
+}
+
+.placeholder {
+  font-size: 1em;
+  color: #777;
+}
+
+/* Form */
+.form {
+  display: flex;
+  flex-direction: column;
+}
+
+.formGroup {
+  margin-bottom: 15px;
+}
+
+.readOnlyInput {
+  background-color: #e9ecef;
+  border: 1px solid #ccc;
+  padding: 10px;
+  border-radius: 5px;
+  cursor: not-allowed;
+}
+
+.submitButton {
+  background-color: #0073b1;
+  color: #fff;
+  padding: 10px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-weight: bold;
+}

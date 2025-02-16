@@ -7,8 +7,10 @@ import Services from './pages/Services';
 import Projects from './pages/Projects';
 import SocialService from './pages/SocialService';
 import Contact from './pages/Contact';
+import Careers from './pages/Careers';
+import Media from './pages/Media'
 import 'bootstrap/dist/css/bootstrap.min.css';
-import './main.css';
+import './styles/main.css';
 function App() {
   return (
     <Router>
@@ -21,6 +23,8 @@ function App() {
             <Route path="/projects" element={<Projects />} />
             <Route path="/social-service" element={<SocialService />} />
             <Route path="/contact" element={<Contact />} />
+            <Route path="/careers" element={<Careers />} />
+            <Route path="/media" element={<Media />} />
           </Routes>
         </main>
         <Footer />
