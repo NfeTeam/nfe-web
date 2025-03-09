@@ -1,64 +1,96 @@
-import React, { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import {
+  Container,
+  Typography,
+  Card,
+  CardContent,
+  CardMedia,
+  List,
+  ListItem,
+  ListItemText,
+  Box,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
+import { styled } from "@mui/material/styles";
 import { db, collection, getDocs, doc, getDoc } from "../components/firebase";
-import Background from "../images/background-page-2.jpg";
 import getMediaUrl from "../components/MediaUrl";
+// import Background from "../images/background-page-2.jpg";
+import Background from "../images/background-page.jpg";
+const BackgroundDiv = styled("div")({
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  backgroundImage: `url(${Background})`,
+  backgroundSize: "cover",
+  backgroundPosition: "center",
+  backgroundAttachment: "fixed",
+  opacity: 0.15,
+  zIndex: -1,
+  "&::after": {
+    content: '""',
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(255, 255, 255, 0.4)",
+  }
+});
+
+const StyledCard = styled(Card)(({ theme }) => ({
+  height: "100%",
+  display: "flex",
+  flexDirection: "column",
+  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+  backgroundColor: "rgba(255, 255, 255, 0.95)",
+  borderRadius: theme.spacing(2),
+  border: "1px solid rgba(0, 102, 255, 0.1)",
+  "&:hover": {
+    transform: "translateY(-8px)",
+    boxShadow: "0 12px 24px rgba(0, 102, 255, 0.15)",
+  },
+}));
+
+const CardContentTransition = styled(CardContent)(({ expanded }) => ({
+  transition: "all 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
+  opacity: expanded ? 1 : 0,
+  maxHeight: expanded ? "2000px" : 0,
+  overflow: "hidden",
+}));
+
+const TitleTypography = styled(Typography)(({ theme }) => ({
+  fontWeight: 700,
+  background: "linear-gradient(45deg, #0066FF 30%, #00A3FF 90%)",
+  backgroundClip: "text",
+  WebkitBackgroundClip: "text",
+  color: "transparent",
+  marginBottom: theme.spacing(2),
+  textAlign: "center",
+}));
+
+const ListItemStyled = styled(ListItem)(({ theme }) => ({
+  padding: theme.spacing(1.5),
+  "&:hover": {
+    backgroundColor: "rgba(0, 102, 255, 0.05)",
+    borderRadius: theme.spacing(1),
+  },
+}));
 
 const Services = () => {
   const [chartImageUrl, setChartImageUrl] = useState(null);
   const [servicesData, setServicesData] = useState([]);
   const [expandedRow, setExpandedRow] = useState(0);
-  const [itemsPerRow, setItemsPerRow] = useState(3); // Default to large screen size
   const [bimData, setBimData] = useState(null);
 
-  useEffect(() => {
-    // Add styles to head
-    const style = document.createElement('style');
-    style.textContent = `
-      .card-content {
-        transition: all 0.7s ease-in-out;
-        opacity: 0;
-        max-height: 0;
-        overflow: hidden;
-      }
-      
-      .card-content.expanded {
-        opacity: 1;
-        max-height: 2000px; /* Adjust this value based on your maximum content height */
-      }
-      
-      .card {
-        transition: all 0.7s ease-in-out;
-      }
-      
-      .card:hover {
-        transform: translateY(-2px);
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      }
-    `;
-    document.head.appendChild(style);
-    return () => document.head.removeChild(style);
-  }, []);
-  // Function to determine items per row based on window width
-  const updateItemsPerRow = () => {
-    const width = window.innerWidth;
-    if (width >= 992) { // lg breakpoint
-      setItemsPerRow(3);
-    } else if (width >= 768) { // md breakpoint
-      setItemsPerRow(2);
-    } else { // sm breakpoint
-      setItemsPerRow(1);
-    }
-  };
-
-  // Initial setup and window resize listener
-  useEffect(() => {
-    updateItemsPerRow();
-    const handleResize = () => {
-      updateItemsPerRow();
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  const theme = useTheme();
+  const isLg = useMediaQuery(theme.breakpoints.up("lg"));
+  const isMd = useMediaQuery(theme.breakpoints.up("md"));
+  const isSm = useMediaQuery(theme.breakpoints.down("sm"));
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const itemsPerRow = isLg ? 3 : isMd ? 2 : 1;
 
   useEffect(() => {
     const fetchChartImage = async () => {
@@ -92,167 +124,265 @@ const Services = () => {
         }
       } catch (error) {
         console.error("Error fetching BIM Technology data: ", error);
-      } finally {
-
       }
     };
 
     fetchBIMData();
     fetchChartImage();
     fetchServicesData();
-
   }, []);
 
-  // Function to determine if a service should show its content
   const shouldShowContent = (index) => {
     const rowIndex = Math.floor(index / itemsPerRow);
     return rowIndex === expandedRow;
   };
 
-  // Function to handle row expansion
   const handleRowClick = (index) => {
     const rowIndex = Math.floor(index / itemsPerRow);
-    setExpandedRow(rowIndex);
+    setExpandedRow(rowIndex === expandedRow ? -1 : rowIndex);
   };
 
   return (
-    <div style={{ position: "relative" }}>
-      <div
-        style={{
-          position: "absolute",
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundImage: `url(${Background})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundAttachment: "fixed",
-          opacity: 0.3,
-          zIndex: -1,
-          animation: "moveBackground 20s ease-in-out infinite",
-        }}
-      ></div>
-
-      <div className="custom-container py-5">
-        <h1 className="text-center mb-5">Our BIM Services</h1>
-
-        {/* Why Choose BIM Technology Card */}
-        <div className="row my-5">
-          {/* Why Choose BIM Technology Card */}
-          <div className="col-md-4 d-flex">
-            <div className="card rounded h-100">
-              <h3 className="text-center card-title">Why Choose BIM Technology?</h3>
-              <div className="card-body">
-                <ul className="list-unstyled fs-6">
-                  {bimData?.whyChoose.map((item, index) => (
-                    <li key={index}>
-                      <strong>{index + 1}. {item.split(":")[0]}:</strong> {item.split(":")[1]}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </div>
-
-          {/* Chart Image */}
-          <div className="col-md-4 d-flex">
-            <div className="card rounded h-100">
-              {chartImageUrl ? (
-                <img
-                  src={chartImageUrl}
-                  alt="BIM Chart"
-                  className="img-fluid"
-                />
-              ) : (
-                <p className="text-center">No chart image available.</p>
-              )}
-            </div>
-          </div>
-
-          {/* Advantages of BIM Technology Card */}
-          <div className="col-md-4 d-flex">
-            <div className="card rounded h-100">
-              <h3 className="text-center card-title">Advantages of BIM Technology</h3>
-              <div className="card-body">
-                <ul className="list-unstyled fs-6">
-                  {bimData?.advantages.map((item, index) => (
-                    <li key={index}>
-                      <strong>• {item.split(":")[0]}:</strong> {item.split(":")[1]}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Services List */}
-        {/* Services List */}
-        <div className="row my-5">
-          {servicesData.map((service, index) => (
-            <div
-              key={index}
-              className="col-lg-4 col-md-6 col-sm-12 d-flex mb-4"
-              onClick={() => handleRowClick(index)}
-              style={{ cursor: 'pointer' }}
+    <Box position="relative" sx={{ minHeight: "100vh" }}>
+      <BackgroundDiv />
+      <Container maxWidth="xl" sx={{ py: { xs: 4, md: 6 }, mb: 0 }}>
+        <Box
+          sx={{
+            background: "linear-gradient(45deg, rgba(0, 102, 255, 0.9), rgba(0, 163, 255, 0.9))",
+            borderRadius: { xs: 2, md: 4 },
+            boxShadow: "0 8px 32px rgba(0, 102, 255, 0.15)",
+            display: "inline-block",
+            px: { xs: 2, md: 4 },
+            py: { xs: 2, md: 3 },
+            mt: 3,
+            mb: 5,
+            ml: { xs: 0, md: 2 },
+            width: { xs: "100%", md: "auto" },
+          }}
+        >
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "flex-start",
+              alignItems: "center",
+              gap: 2,
+              py: 2,
+              flexWrap: "wrap",
+              "&:hover .filled": {
+                color: "transparent",
+                textStroke: "1px #fff",
+                WebkitTextStroke: "1px #fff",
+              },
+              "&:hover .outlined": {
+                color: "#fff",
+                textStroke: "none",
+                WebkitTextStroke: "none",
+              },
+              ".filled": {
+                transition:
+                  "color 0.3s ease, text-stroke 0.3s ease, -webkit-text-stroke 0.3s ease",
+              },
+              ".outlined": {
+                transition:
+                  "color 0.3s ease, text-stroke 0.3s ease, -webkit-text-stroke 0.3s ease",
+              },
+            }}
+          >
+            <Typography
+              variant={isMobile ? "h4" : "h2"}
+              className="filled"
+              sx={{
+                color: "#fff",
+                fontWeight: "bold",
+              }}
             >
-              <div className="card rounded w-100 h-100">
-                {/* Title Section */}
-                <div
-                  className="text-center card-title bg-primary text-white mb-0"
-                  style={{ padding: "0px" }}
+              OUR
+            </Typography>
+            <Typography
+              variant={isMobile ? "h4" : "h2"}
+              className="outlined"
+              sx={{
+                color: "transparent",
+                fontWeight: "bold",
+                textStroke: "1px #fff",
+                WebkitTextStroke: "1px #fff",
+              }}
+            >
+              BIM
+            </Typography>
+            <Typography
+              variant={isMobile ? "h4" : "h2"}
+              className="filled"
+              sx={{
+                color: "#fff",
+                fontWeight: "bold",
+              }}
+            >
+              SERVICES
+            </Typography>
+          </Box>
+        </Box>
+
+        <Box
+          display="grid"
+          gridTemplateColumns={{
+            xs: "1fr",
+            sm: "repeat(2, 1fr)",
+            md: "repeat(3, 1fr)"
+          }}
+          gap={4}
+          mb={6}
+        >
+          <StyledCard>
+            <CardContent sx={{ p: { xs: 2, md: 4 } }}>
+              <TitleTypography variant="h5" gutterBottom>
+                Why Choose BIM Technology?
+              </TitleTypography>
+              <List sx={{ p: 0 }}>
+                {bimData?.whyChoose.map((item, index) => (
+                  <ListItemStyled key={index}>
+                    <ListItemText
+                      primary={
+                        <Typography variant="subtitle1" fontWeight="600" color="primary.main">
+                          {`${index + 1}. ${item.split(":")[0]}`}
+                        </Typography>
+                      }
+                      secondary={
+                        <Typography variant="body2" sx={{ mt: 1, color: "text.secondary" }}>
+                          {item.split(":")[1]}
+                        </Typography>
+                      }
+                    />
+                  </ListItemStyled>
+                ))}
+              </List>
+            </CardContent>
+          </StyledCard>
+
+          <StyledCard>
+            <CardMedia
+              component="img"
+              image={chartImageUrl || "/placeholder.svg"}
+              alt="BIM Chart"
+              sx={{
+                height: 300,
+                objectFit: "contain",
+                p: 2,
+                backgroundColor: "rgba(0, 102, 255, 0.02)"
+              }}
+            />
+            {!chartImageUrl && (
+              <CardContent>
+                <Typography align="center" color="text.secondary">
+                  No chart image available.
+                </Typography>
+              </CardContent>
+            )}
+          </StyledCard>
+
+          <StyledCard>
+            <CardContent sx={{ p: { xs: 2, md: 4 } }}>
+              <TitleTypography variant="h5" gutterBottom>
+                Advantages of BIM Technology
+              </TitleTypography>
+              <List sx={{ p: 0 }}>
+                {bimData?.advantages.map((item, index) => (
+                  <ListItemStyled key={index}>
+                    <ListItemText
+                      primary={
+                        <Typography variant="subtitle1" fontWeight="600" color="primary.main">
+                          {item.split(":")[0]}
+                        </Typography>
+                      }
+                      secondary={
+                        <Typography variant="body2" sx={{ mt: 1, color: "text.secondary" }}>
+                          {item.split(":")[1]}
+                        </Typography>
+                      }
+                    />
+                  </ListItemStyled>
+                ))}
+              </List>
+            </CardContent>
+          </StyledCard>
+        </Box>
+
+        <Box
+          display="grid"
+          gridTemplateColumns={{
+            xs: "1fr",
+            sm: "repeat(2, 1fr)",
+            md: "repeat(3, 1fr)"
+          }}
+          gap={4}
+          my={5}
+        >
+          {servicesData.map((service, index) => (
+            <StyledCard key={index} onClick={() => handleRowClick(index)}>
+              <CardContent
+                sx={{
+                  background: "linear-gradient(45deg, #0066FF, #00A3FF)",
+                  color: "white",
+                  textAlign: "center",
+                  py: 3,
+                  px: { xs: 2, md: 3 },
+                  borderTopLeftRadius: theme.spacing(2),
+                  borderTopRightRadius: theme.spacing(2),
+                }}
+              >
+                <Typography
+                  variant="h6"
+                  sx={{
+                    fontWeight: "bold",
+                    letterSpacing: "0.5px",
+                    textShadow: "0 2px 4px rgba(0,0,0,0.2)",
+                    cursor: "pointer",
+                  }}
                 >
                   {service.title}
-                </div>
-
-                {/* Content section with smooth transition */}
-                <div className={`card-content ${shouldShowContent(index) ? 'expanded' : ''}`}>
-                  {/* Media Section */}
-                  {service.type === "video" ? (
-                    <iframe
-                      src={getMediaUrl(service.imageUrl, "video")}
-                      title={service.title}
-                      className="card-img-top"
-                      style={{
-                        height: "200px",
-                        objectFit: "cover",
-                        width: "100%",
-                        pointerEvents: 'auto'
-                      }}
-                      allowFullScreen
-                    />
-                  ) : (
-                    <img
-                      src={getMediaUrl(service.imageUrl, "image")}
-                      alt={`${service.title}`}
-                      className="card-img-top"
-                      style={{
-                        objectFit: "cover",
-                        maxHeight: "200px",
-                      }}
-                    />
-                  )}
-
-                  {/* Text Content */}
-                  <div className="card-body p-3">
-                    <p>{service.description}</p>
-                    <ul className="list-unstyled fs-6">
-                      {service.items.map((item, i) => (
-                        <li key={i}>🛠 {item}</li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              </div>
-            </div>
+                </Typography>
+              </CardContent>
+              <CardContentTransition expanded={shouldShowContent(index)}>
+                {service.type === "video" ? (
+                  <CardMedia
+                    component="iframe"
+                    src={getMediaUrl(service.imageUrl, "video")}
+                    title={service.title}
+                    sx={{ height: 250, border: "none" }}
+                  />
+                ) : (
+                  <CardMedia
+                    component="img"
+                    image={getMediaUrl(service.imageUrl, "image")}
+                    alt={service.title}
+                    sx={{ height: 250, objectFit: "cover" }}
+                  />
+                )}
+                <CardContent sx={{ p: { xs: 2, md: 3 } }}>
+                  <Typography variant="body1" sx={{ mb: 2, color: "text.secondary" }}>
+                    {service.description}
+                  </Typography>
+                  <List sx={{ p: 0 }}>
+                    {service.items.map((item, i) => (
+                      <ListItemStyled key={i}>
+                        <ListItemText 
+                          primary={
+                            <Typography variant="body2" sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                              <span style={{ color: "#0066FF" }}>⚡</span> {item}
+                            </Typography>
+                          }
+                        />
+                      </ListItemStyled>
+                    ))}
+                  </List>
+                </CardContent>
+              </CardContentTransition>
+            </StyledCard>
           ))}
-        </div>
-      </div>
-    </div>
+        </Box>
+      </Container>
+    </Box>
   );
 };
 
 export default Services;
-
-

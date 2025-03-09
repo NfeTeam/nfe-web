@@ -1,157 +1,179 @@
-import React, { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect } from "react"
 import {
   Container,
-  Row,
-  Col,
-  Form,
-  Button,
-  ListGroup,
   Card,
-  Modal,
-} from "react-bootstrap";
-import axios from "axios"; // Import axios for API requests
-import "bootstrap/dist/css/bootstrap.min.css";
-import { db, collection, getDocs } from "../components/firebase";
+  CardHeader,
+  CardContent,
+  Typography,
+  TextField,
+  List,
+  ListItem,
+  ListItemText,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  useMediaQuery,
+  useTheme,
+  Button,
+  Box,
+} from "@mui/material"
+import { styled } from "@mui/material/styles"
+import { db, collection, getDocs } from "../components/firebase"
+import { ApplyModal } from "./ApplyModal"
+import { JobDetailsModal } from "./JobDetailsModal"
+import axios from "axios"
+import Background from "../images/background-page.jpg"
 
-// Move these components outside and above the Careers component
-const JobDetailsModal = ({ show, onHide, selectedJob, onApply }) => (
-  <Modal show={show} onHide={onHide} className="d-md-none">
-    <Modal.Header closeButton>
-      <Modal.Title>{selectedJob?.title}</Modal.Title>
-    </Modal.Header>
-    <Modal.Body>
-      <div dangerouslySetInnerHTML={{ __html: selectedJob?.description }} />
-    </Modal.Body>
-    <Modal.Footer>
-      <Button variant="secondary" onClick={onHide}>
-        Close
-      </Button>
-      <Button variant="primary" onClick={onApply}>
-        Apply
-      </Button>
-    </Modal.Footer>
-  </Modal>
-);
+const BackgroundDiv = styled('div')({
+  position: "absolute",
+  top: 0,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  backgroundImage: `url(${Background})`,
+  backgroundSize: "cover",
+  backgroundPosition: "center",
+  backgroundAttachment: "fixed",
+  opacity: 0.15,
+  zIndex: -1,
+  "&::after": {
+    content: '""',
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: "rgba(255, 255, 255, 0.4)",
+  }
+})
 
-const ApplyModal = ({
-  show,
-  onHide,
-  selectedJob,
-  formData,
-  onInputChange,
-  onFileUpload,
-  onSubmit,
-}) => (
-  <Modal show={show} onHide={onHide} className="d-md-none">
-    <Modal.Header closeButton>
-      <Modal.Title>Apply for {selectedJob?.title}</Modal.Title>
-    </Modal.Header>
-    <Modal.Body>
-      <Form onSubmit={onSubmit}>
-        <Form.Group className="mb-3">
-          <Form.Label>Email</Form.Label>
-          <Form.Control
-            type="email"
-            name="email"
-            value={formData.email}
-            onChange={onInputChange}
-            required
-          />
-        </Form.Group>
-        <Form.Group className="mb-3">
-          <Form.Label>Name</Form.Label>
-          <Form.Control
-            type="text"
-            name="name"
-            value={formData.name}
-            onChange={onInputChange}
-            required
-          />
-        </Form.Group>
-        <Form.Group className="mb-3">
-          <Form.Label>Upload Resume</Form.Label>
-          <Form.Control
-            type="file"
-            name="resume"
-            onChange={onFileUpload}
-            required
-          />
-        </Form.Group>
-        <Form.Group className="mb-3">
-          <Form.Label>Upload CV</Form.Label>
-          <Form.Control
-            type="file"
-            name="cv"
-            onChange={onFileUpload}
-            required
-          />
-        </Form.Group>
-        <Form.Group className="mb-3">
-          <Form.Label>
-            Job ID: {selectedJob ? selectedJob.id : "None selected"}
-          </Form.Label>
-        </Form.Group>
+const StyledCard = styled(Card)(({ theme }) => ({
+  height: "100%",
+  display: "flex",
+  flexDirection: "column",
+  backgroundColor: "rgba(255, 255, 255, 0.95)",
+  borderRadius: theme.spacing(2),
+  border: "1px solid rgba(0, 102, 255, 0.1)",
+  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+  overflow: "hidden",
+  boxShadow: "0 4px 12px rgba(0, 102, 255, 0.1)",
+  "&:hover": {
+    boxShadow: "0 8px 24px rgba(0, 102, 255, 0.15)",
+  },
+}))
 
-        <Button variant="primary" type="submit">
-          Submit Application
-        </Button>
-      </Form>
-    </Modal.Body>
-  </Modal>
-);
+const StyledCardHeader = styled(CardHeader)(({ theme }) => ({
+  background: "linear-gradient(135deg, rgba(0, 102, 255, 0.05), rgba(0, 163, 255, 0.05))",
+  borderBottom: "1px solid rgba(0, 102, 255, 0.1)",
+  "& .MuiTypography-root": {
+    background: "linear-gradient(45deg, #0066FF 30%, #00A3FF 90%)",
+    backgroundClip: "text",
+    WebkitBackgroundClip: "text",
+    color: "transparent",
+    fontWeight: 600,
+  },
+}))
+
+const StyledCardContent = styled(CardContent)({
+  flexGrow: 1,
+  padding: "24px",
+})
+
+const StyledListItem = styled(ListItem)(({ theme }) => ({
+  borderRadius: theme.spacing(1),
+  marginBottom: theme.spacing(1),
+  transition: "all 0.3s ease",
+  border: "1px solid transparent",
+  "&:hover": {
+    backgroundColor: "rgba(0, 102, 255, 0.05)",
+    transform: "translateX(8px)",
+    border: "1px solid rgba(0, 102, 255, 0.1)",
+  },
+  "&.Mui-selected": {
+    backgroundColor: "rgba(0, 102, 255, 0.1)",
+    borderColor: "rgba(0, 102, 255, 0.2)",
+    "&:hover": {
+      backgroundColor: "rgba(0, 102, 255, 0.15)",
+    },
+  },
+}))
+
+const StyledTextField = styled(TextField)(({ theme }) => ({
+  "& .MuiOutlinedInput-root": {
+    borderRadius: theme.spacing(1.5),
+    transition: "all 0.3s ease",
+    backgroundColor: "rgba(255, 255, 255, 0.9)",
+    "&:hover": {
+      backgroundColor: "rgba(255, 255, 255, 1)",
+    },
+    "&.Mui-focused": {
+      backgroundColor: "rgba(255, 255, 255, 1)",
+      boxShadow: "0 4px 12px rgba(0, 102, 255, 0.1)",
+    },
+  },
+  "& .MuiOutlinedInput-notchedOutline": {
+    borderColor: "rgba(0, 102, 255, 0.1)",
+  },
+  "&:hover .MuiOutlinedInput-notchedOutline": {
+    borderColor: "rgba(0, 102, 255, 0.3)",
+  },
+}))
 
 const Careers = () => {
-  const [jobPostings, setJobPostings] = useState([]); // Initialize state for job postings
-  const fetchJobPostings = async () => {
-    try {
-      const querySnapshot = await getDocs(collection(db, "jobPostings"));
-      const postings = [];
-      querySnapshot.forEach((doc) => {
-        postings.push({ id: doc.id, ...doc.data() }); // Add document ID and data to postings array
-      });
-      setJobPostings(postings); // Update state with fetched job postings
-    } catch (error) {
-      console.error("Error fetching job postings: ", error);
-    }
-  };
-
-  // Call fetchJobPostings when the component mounts
-  useEffect(() => {
-    fetchJobPostings();
-  }, []);
-
-  const [selectedJob, setSelectedJob] = useState(null);
-  const [searchQuery, setSearchQuery] = useState("");
+  const [jobPostings, setJobPostings] = useState([])
+  const [selectedJob, setSelectedJob] = useState(null)
+  const [searchQuery, setSearchQuery] = useState("")
   const [formData, setFormData] = useState({
     email: "",
     name: "",
     resume: null,
     cv: null,
-  });
-  const [showJobModal, setShowJobModal] = useState(false);
-  const [showApplyModal, setShowApplyModal] = useState(false);
+  })
+  const [showJobModal, setShowJobModal] = useState(false)
+  const [showApplyModal, setShowApplyModal] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const filteredJobs = jobPostings.filter((job) =>
-    job.title.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const theme = useTheme()
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"))
+
+  const fetchJobPostings = useCallback(async () => {
+    try {
+      const querySnapshot = await getDocs(collection(db, "jobPostings"))
+      const postings = querySnapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }))
+      setJobPostings(postings)
+    } catch (error) {
+      console.error("Error fetching job postings: ", error)
+    }
+  }, [])
+
+  useEffect(() => {
+    fetchJobPostings()
+  }, [fetchJobPostings])
+
+  const filteredJobs = jobPostings.filter((job) => {
+    const searchTerm = searchQuery.toLowerCase();
+    return (
+      job.title.toLowerCase().includes(searchTerm) ||
+      job.description.toLowerCase().includes(searchTerm)
+    );
+  });
 
   const handleJobSelect = (job) => {
-    setSelectedJob(job);
-    // Only show modal on mobile devices
-    if (window.innerWidth < 768) {
-      setShowJobModal(true);
+    setSelectedJob(job)
+    if (isMobile) {
+      setShowJobModal(true)
     }
-  };
+  }
 
   const handleInputChange = useCallback((e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
-  }, []);
+    const { name, value } = e.target
+    setFormData((prev) => ({ ...prev, [name]: value }))
+  }, [])
 
   const handleFileUpload = useCallback((e) => {
-    const { name, files } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: files[0] }));
-  }, []);
+    const { name, files } = e.target
+    setFormData((prev) => ({ ...prev, [name]: files[0] }))
+  }, [])
 
   const handleSubmit = useCallback(
     async (e) => {
@@ -167,6 +189,7 @@ const Careers = () => {
       formDataToSubmit.append("jobTitle", selectedJob?.title);
 
       try {
+        setIsSubmitting(true);
         const response = await axios.post("http://localhost:5000/send-email", formDataToSubmit, {
           headers: {
             "Content-Type": "multipart/form-data",
@@ -179,165 +202,277 @@ const Careers = () => {
       } catch (error) {
         console.error("Error submitting form:", error);
         alert("Failed to submit application. Please try again later.");
+      } finally {
+        setIsSubmitting(false);
       }
     },
-    [formData, selectedJob]
+    [formData, selectedJob, setShowApplyModal]
   );
 
   return (
-    <Container fluid className="mt-4">
-      <Row>
-        {/* Left Column: Job Postings */}
-        <Col md={4} className="mb-4">
-          <Card className="border-light shadow-sm">
-            <Card.Header className="bg-white border-bottom-0">
-              <h4 className="mb-3">Job Postings</h4>
-              <Form.Control
-                type="text"
+    <Box position="relative" sx={{ minHeight: "100vh" }}>
+      <BackgroundDiv />
+      <Container maxWidth="xl" sx={{ py: { xs: 4, md: 6 }, mb: 0 }}>
+        <Box
+          sx={{
+            background: "linear-gradient(45deg, rgba(0, 102, 255, 0.9), rgba(0, 163, 255, 0.9))",
+            borderRadius: { xs: 2, md: 4 },
+            boxShadow: "0 8px 32px rgba(0, 102, 255, 0.15)",
+            display: "inline-block",
+            px: { xs: 2, md: 4 },
+            py: { xs: 2, md: 3 },
+            mt: 3,
+            mb: 5,
+            ml: { xs: 0, md: 2 },
+            width: { xs: "100%", md: "auto" },
+          }}
+        >
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "flex-start",
+              alignItems: "center",
+              gap: isMobile ? 2 : 4,
+              py: 2,
+              flexWrap: "wrap",
+              "&:hover .filled": {
+                color: "transparent",
+                textStroke: "1px #fff",
+                WebkitTextStroke: "1px #fff",
+              },
+              "&:hover .outlined": {
+                color: "#fff",
+                textStroke: "none",
+                WebkitTextStroke: "none",
+              },
+              ".filled, .outlined": {
+                transition: "all 0.3s ease",
+              },
+            }}
+          >
+            <Typography
+              variant={isMobile ? "h4" : "h2"}
+              className="filled"
+              sx={{
+                color: "#fff",
+                fontWeight: "bold",
+              }}
+            >
+              CAREER
+            </Typography>
+            <Typography
+              variant={isMobile ? "h4" : "h2"}
+              className="outlined"
+              sx={{
+                color: "transparent",
+                fontWeight: "bold",
+                textStroke: "1px #fff",
+                WebkitTextStroke: "1px #fff",
+              }}
+            >
+              OPPORTUNITIES
+            </Typography>
+          </Box>
+        </Box>
+
+        <Box 
+          display="grid" 
+          gridTemplateColumns={{
+            xs: "1fr",
+            md: "1fr 1fr 1fr"
+          }}
+          gap={4}
+          sx={{ 
+            width: '100%',
+            opacity: 0,
+            animation: "fadeIn 0.6s ease-out forwards",
+            "@keyframes fadeIn": {
+              from: { opacity: 0, transform: "translateY(20px)" },
+              to: { opacity: 1, transform: "translateY(0)" },
+            },
+          }}
+        >
+          <StyledCard>
+            <StyledCardHeader title="Job Postings" />
+            <StyledCardContent>
+              <StyledTextField
+                fullWidth
+                variant="outlined"
                 placeholder="Search jobs..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="border-0 bg-light"
+                sx={{ mb: 2 }}
               />
-            </Card.Header>
-            <ListGroup variant="flush">
-              {filteredJobs.map((job) => (
-                <ListGroup.Item
-                  key={job.id}
-                  action
-                  onClick={() => handleJobSelect(job)}
-                  active={selectedJob?.id === job.id}
-                  className="border-0"
-                >
-                  <h5 className="mb-1">{job.title}</h5>
-                  <p className="mb-0 text-muted">{job.shortDesc}</p>
-                </ListGroup.Item>
-              ))}
-            </ListGroup>
-          </Card>
-        </Col>
+              <List sx={{ 
+                maxHeight: "70vh", 
+                overflowY: "auto",
+                "&::-webkit-scrollbar": {
+                  width: "8px",
+                },
+                "&::-webkit-scrollbar-track": {
+                  background: "rgba(0, 0, 0, 0.05)",
+                  borderRadius: "4px",
+                },
+                "&::-webkit-scrollbar-thumb": {
+                  background: "rgba(0, 102, 255, 0.3)",
+                  borderRadius: "4px",
+                  "&:hover": {
+                    background: "rgba(0, 102, 255, 0.5)",
+                  },
+                },
+              }}>
+                {filteredJobs.map((job) => (
+                  <StyledListItem
+                    key={job.id}
+                    button
+                    onClick={() => handleJobSelect(job)}
+                    selected={selectedJob?.id === job.id}
+                  >
+                    <ListItemText 
+                      primary={
+                        <Typography variant="subtitle1" sx={{ fontWeight: 600, color: "primary.main" }}>
+                          {job.title}
+                        </Typography>
+                      }
+                      secondary={
+                        <Typography variant="body2" sx={{ color: "text.secondary" }}>
+                          {job.shortDesc}
+                        </Typography>
+                      }
+                    />
+                  </StyledListItem>
+                ))}
+              </List>
+            </StyledCardContent>
+          </StyledCard>
 
-        {/* Middle Column: Job Details (visible only on larger screens) */}
-        <Col md={4} className="mb-4 d-none d-md-block">
-          <Card className="border-light shadow-sm h-100">
-            <Card.Header className="bg-white border-bottom-0">
-              <h4>Job Details</h4>
-            </Card.Header>
-            <Card.Body>
-              {selectedJob ? (
-                <>
-                  <h5 className="mb-3">{selectedJob.title}</h5>
-                  <div
-                    className="text-muted"
-                    dangerouslySetInnerHTML={{
-                      __html: selectedJob.description,
-                    }}
-                  />
-                </>
-              ) : (
-                <p className="text-muted">Select a job to view details.</p>
-              )}
-            </Card.Body>
-          </Card>
-        </Col>
+          {!isMobile && (
+            <>
+              <StyledCard>
+                <StyledCardHeader title="Job Details" />
+                <StyledCardContent>
+                  {selectedJob ? (
+                    <>
+                      <Typography 
+                        variant="h6" 
+                        gutterBottom
+                        sx={{
+                          background: "linear-gradient(45deg, #0066FF 30%, #00A3FF 90%)",
+                          backgroundClip: "text",
+                          WebkitBackgroundClip: "text",
+                          color: "transparent",
+                          fontWeight: 600,
+                          mb: 3,
+                        }}
+                      >
+                        {selectedJob.title}
+                      </Typography>
+                      <Typography
+                        variant="body2"
+                        sx={{
+                          color: "text.secondary",
+                          lineHeight: 1.7,
+                        }}
+                        dangerouslySetInnerHTML={{
+                          __html: selectedJob.description,
+                        }}
+                      />
+                    </>
+                  ) : (
+                    <Typography 
+                      variant="body2" 
+                      sx={{ 
+                        color: "text.secondary",
+                        textAlign: "center",
+                        py: 4,
+                      }}
+                    >
+                      Select a job to view details.
+                    </Typography>
+                  )}
+                </StyledCardContent>
+              </StyledCard>
 
-        {/* Right Column: Application Form (visible only on larger screens) */}
-        <Col md={4} className="d-none d-md-block">
-          <Card className="border-light shadow-sm">
-            <Card.Header className="bg-white border-bottom-0">
-              <h4>Apply for the Job</h4>
-            </Card.Header>
-            <Card.Body>
-              <Form onSubmit={handleSubmit}>
-                <Form.Group className="mb-3">
-                  <Form.Label>Selected Job</Form.Label>
-                  <Form.Control
-                    type="text"
-                    value={selectedJob ? selectedJob.title : "None selected"}
-                    readOnly
-                    className="bg-light"
+              <StyledCard>
+                <StyledCardHeader title="Apply for the Job" />
+                <StyledCardContent>
+                  <ApplyModal
+                    selectedJob={selectedJob}
+                    formData={formData}
+                    onInputChange={handleInputChange}
+                    onFileUpload={handleFileUpload}
+                    onSubmit={handleSubmit}
+                    fullWidth
+                    isSubmitting={isSubmitting}
                   />
-                </Form.Group>
-                <Form.Group className="mb-3">
-                  <Form.Label>Email</Form.Label>
-                  <Form.Control
-                    type="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </Form.Group>
-                <Form.Group className="mb-3">
-                  <Form.Label>Name</Form.Label>
-                  <Form.Control
-                    type="text"
-                    name="name"
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    required
-                  />
-                </Form.Group>
-                <Form.Group className="mb-3">
-                  <Form.Label>Upload Resume</Form.Label>
-                  <Form.Control
-                    type="file"
-                    name="resume"
-                    onChange={handleFileUpload}
-                    required
-                  />
-                </Form.Group>
-                <Form.Group className="mb-3">
-                  <Form.Label>Upload CV</Form.Label>
-                  <Form.Control
-                    type="file"
-                    name="cv"
-                    onChange={handleFileUpload}
-                    required
-                  />
-                </Form.Group>
-                <Form.Group className="mb-3">
-                  <Form.Label>
-                    Job ID: {selectedJob ? selectedJob.id : "None selected"}
-                  </Form.Label>
-                </Form.Group>
-                <Button
-                  variant="primary"
-                  type="submit"
-                  disabled={!selectedJob}
-                  className="w-100"
+                </StyledCardContent>
+              </StyledCard>
+            </>
+          )}
+        </Box>
+
+        {isMobile && (
+          <>
+            <JobDetailsModal
+              open={showJobModal}
+              onClose={() => setShowJobModal(false)}
+              selectedJob={selectedJob}
+              onApply={() => {
+                setShowJobModal(false)
+                setShowApplyModal(true)
+              }}
+            />
+
+            <Dialog 
+              open={showApplyModal} 
+              onClose={() => setShowApplyModal(false)} 
+              fullScreen
+              PaperProps={{
+                sx: {
+                  background: "linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.98))",
+                }
+              }}
+            >
+              <DialogTitle sx={{
+                background: "linear-gradient(45deg, rgba(0, 102, 255, 0.9), rgba(0, 163, 255, 0.9))",
+                color: "white",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}>
+                <Typography variant="h6">
+                  Apply for {selectedJob?.title}
+                </Typography>
+                <Button 
+                  onClick={() => setShowApplyModal(false)} 
+                  sx={{ 
+                    color: "white",
+                    "&:hover": {
+                      backgroundColor: "rgba(255,255,255,0.1)",
+                    }
+                  }}
                 >
-                  Submit Application
+                  Close
                 </Button>
-              </Form>
-            </Card.Body>
-          </Card>
-        </Col>
-      </Row>
+              </DialogTitle>
+              <DialogContent sx={{ p: 3 }}>
+                <ApplyModal
+                  selectedJob={selectedJob}
+                  formData={formData}
+                  onInputChange={handleInputChange}
+                  onFileUpload={handleFileUpload}
+                  onSubmit={handleSubmit}
+                  fullWidth
+                  isSubmitting={isSubmitting}
+                />
+              </DialogContent>
+            </Dialog>
+          </>
+        )}
+      </Container>
+    </Box>
+  )
+}
 
-      {/* Modals for mobile view only */}
-      <JobDetailsModal
-        show={showJobModal}
-        onHide={() => setShowJobModal(false)}
-        selectedJob={selectedJob}
-        onApply={() => {
-          setShowJobModal(false);
-          setShowApplyModal(true);
-        }}
-      />
-      <ApplyModal
-        show={showApplyModal}
-        onHide={() => setShowApplyModal(false)}
-        selectedJob={selectedJob}
-        formData={formData}
-        onInputChange={handleInputChange}
-        onFileUpload={handleFileUpload}
-        onSubmit={handleSubmit}
-      />
-    </Container>
-  );
-};
-
-export default Careers;
-
+export default Careers
 
