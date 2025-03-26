@@ -132,6 +132,7 @@ const Careers = () => {
   const [showJobModal, setShowJobModal] = useState(false)
   const [showApplyModal, setShowApplyModal] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isHovered, setIsHovered] = useState(false)
 
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down("md"))
@@ -212,68 +213,62 @@ const Careers = () => {
   return (
     <Box position="relative" sx={{ minHeight: "100vh" }}>
       <BackgroundDiv />
-      <Container maxWidth="xl" sx={{ py: { xs: 4, md: 6 }, mb: 0 }}>
+      <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 }, mb: 0,}}>
         <Box
           sx={{
-            background: "linear-gradient(45deg, rgba(0, 102, 255, 0.9), rgba(0, 163, 255, 0.9))",
-            borderRadius: { xs: 2, md: 4 },
-            boxShadow: "0 8px 32px rgba(0, 102, 255, 0.15)",
-            display: "inline-block",
-            px: { xs: 2, md: 4 },
-            py: { xs: 2, md: 3 },
-            mt: 3,
-            mb: 5,
-            ml: { xs: 0, md: 2 },
-            width: { xs: "100%", md: "auto" },
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            textAlign: "center",
+            py: 0,
+            mt: 0,
+            pt: 0,
+            top: 0,
+            animation: "fadeInSlide 1.5s ease-out",
+            "@keyframes fadeInSlide": {
+              "0%": { opacity: 0, transform: "translateY(-30px)" },
+              "100%": { opacity: 1, transform: "translateY(0)" },
+            },
           }}
         >
-          <Box
+          <Typography
+            variant={isMobile ? "h3" : "h1"}
             sx={{
-              display: "flex",
-              justifyContent: "flex-start",
-              alignItems: "center",
-              gap: isMobile ? 2 : 4,
-              py: 2,
-              flexWrap: "wrap",
-              "&:hover .filled": {
-                color: "transparent",
-                textStroke: "1px #fff",
-                WebkitTextStroke: "1px #fff",
-              },
-              "&:hover .outlined": {
-                color: "#fff",
-                textStroke: "none",
-                WebkitTextStroke: "none",
-              },
-              ".filled, .outlined": {
-                transition: "all 0.3s ease",
-              },
+              fontWeight: 700,
+              letterSpacing: "0.02em",
+              color: "rgb(59, 130, 246)",
+              background: "linear-gradient(90deg, #3b82f6 0%, #06b6d4 100%)",
+              backgroundClip: "text",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              textTransform: "uppercase",
+              lineHeight: 1.1,
+              marginBottom: 2,
+              fontSize: { xs: "1.5rem", sm: "1.5rem", md: "2rem", lg: "3rem" },
+              transition: "transform 0.3s ease",
+              transform: isHovered ? "scale(1.02)" : "scale(1)",
+              textAlign: "center",
             }}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
           >
-            <Typography
-              variant={isMobile ? "h4" : "h2"}
-              className="filled"
-              sx={{
-                color: "#fff",
-                fontWeight: "bold",
-              }}
-            >
-              CAREER
-            </Typography>
-            <Typography
-              variant={isMobile ? "h4" : "h2"}
-              className="outlined"
-              sx={{
-                color: "transparent",
-                fontWeight: "bold",
-                textStroke: "1px #fff",
-                WebkitTextStroke: "1px #fff",
-              }}
-            >
-              OPPORTUNITIES
-            </Typography>
-          </Box>
+            CAREER OPPORTUNITIES
+          </Typography>
         </Box>
+
+        <Box
+          sx={{
+            width: isHovered ? "40%" : "120px",
+            height: "4px",
+            background: "linear-gradient(90deg, #3b82f6 0%, #06b6d4 100%)",
+            transition: "width 0.5s ease",
+            marginTop: 0,
+            paddingTop:0,
+            marginBottom:1,
+            marginLeft: "auto",
+            marginRight: "auto",
+          }}
+        />
 
         <Box 
           display="grid" 

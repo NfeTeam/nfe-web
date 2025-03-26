@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import {
   Container,
   Typography,
@@ -37,7 +37,7 @@ const BackgroundDiv = styled("div")({
     right: 0,
     bottom: 0,
     backgroundColor: "rgba(255, 255, 255, 0.4)",
-  }
+  },
 });
 
 const StyledCard = styled(Card)(({ theme }) => ({
@@ -72,11 +72,13 @@ const TitleTypography = styled(Typography)(({ theme }) => ({
 }));
 
 const ListItemStyled = styled(ListItem)(({ theme }) => ({
-  padding: theme.spacing(1.5),
+  padding: theme.spacing(0.25),
   "&:hover": {
     backgroundColor: "rgba(0, 102, 255, 0.05)",
     borderRadius: theme.spacing(1),
   },
+  marginTop: theme.spacing(0),
+  marginBottom:theme.spacing(0)
 }));
 
 const Services = () => {
@@ -84,6 +86,8 @@ const Services = () => {
   const [servicesData, setServicesData] = useState([]);
   const [expandedRow, setExpandedRow] = useState(0);
   const [bimData, setBimData] = useState(null);
+  const serviceRefs = useRef([]);
+  const [isHovered, setIsHovered] = useState(false);
 
   const theme = useTheme();
   const isLg = useMediaQuery(theme.breakpoints.up("lg"));
@@ -132,6 +136,21 @@ const Services = () => {
     fetchServicesData();
   }, []);
 
+  useEffect(() => {
+    const hash = window.location.hash.substring(1);
+    if (hash) {
+      const index = servicesData.findIndex(
+        (service) => service.title.replace(/\s+/g, '-').toLowerCase() === hash
+      );
+      if (index !== -1) {
+        setExpandedRow(Math.floor(index / itemsPerRow));
+        setTimeout(() => {
+          serviceRefs.current[index]?.scrollIntoView({ behavior: "smooth", block: "center" });
+        }, 1000);
+      }
+    }
+  }, [servicesData, itemsPerRow]);
+
   const shouldShowContent = (index) => {
     const rowIndex = Math.floor(index / itemsPerRow);
     return rowIndex === expandedRow;
@@ -145,97 +164,76 @@ const Services = () => {
   return (
     <Box position="relative" sx={{ minHeight: "100vh" }}>
       <BackgroundDiv />
-      <Container maxWidth="xl" sx={{ py: { xs: 4, md: 6 }, mb: 0 }}>
+      <Container maxWidth="xl" sx={{ py: { xs: 2, md: 4 }, mb: 0, mt: 0 }}>
         <Box
           sx={{
-            background: "linear-gradient(45deg, rgba(0, 102, 255, 0.9), rgba(0, 163, 255, 0.9))",
-            borderRadius: { xs: 2, md: 4 },
-            boxShadow: "0 8px 32px rgba(0, 102, 255, 0.15)",
-            display: "inline-block",
-            px: { xs: 2, md: 4 },
-            py: { xs: 2, md: 3 },
-            mt: 3,
-            mb: 5,
-            ml: { xs: 0, md: 2 },
-            width: { xs: "100%", md: "auto" },
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            textAlign: "center",
+            py: 0,
+            mt: 0,
+            pt: 0,
+            top: 0,
+            animation: "fadeInSlide 1.5s ease-out",
+            "@keyframes fadeInSlide": {
+              "0%": { opacity: 0, transform: "translateY(-30px)" },
+              "100%": { opacity: 1, transform: "translateY(0)" },
+            },
           }}
         >
-          <Box
+          <Typography
+            variant={isMobile ? "h3" : "h1"}
             sx={{
-              display: "flex",
-              justifyContent: "flex-start",
-              alignItems: "center",
-              gap: 2,
-              py: 2,
-              flexWrap: "wrap",
-              "&:hover .filled": {
-                color: "transparent",
-                textStroke: "1px #fff",
-                WebkitTextStroke: "1px #fff",
-              },
-              "&:hover .outlined": {
-                color: "#fff",
-                textStroke: "none",
-                WebkitTextStroke: "none",
-              },
-              ".filled": {
-                transition:
-                  "color 0.3s ease, text-stroke 0.3s ease, -webkit-text-stroke 0.3s ease",
-              },
-              ".outlined": {
-                transition:
-                  "color 0.3s ease, text-stroke 0.3s ease, -webkit-text-stroke 0.3s ease",
-              },
+              fontWeight: 700,
+              letterSpacing: "0.02em",
+              color: "rgb(59, 130, 246)",
+              background: "linear-gradient(90deg, #3b82f6 0%, #06b6d4 100%)",
+              backgroundClip: "text",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+              textTransform: "uppercase",
+              lineHeight: 1.1,
+              marginBottom: 2,
+              fontSize: { xs: "1.5rem", sm: "1.5rem", md: "2rem", lg: "3rem" },
+              transition: "transform 0.3s ease",
+              transform: isHovered ? "scale(1.02)" : "scale(1)",
+              textAlign: "center",
             }}
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
           >
-            <Typography
-              variant={isMobile ? "h4" : "h2"}
-              className="filled"
-              sx={{
-                color: "#fff",
-                fontWeight: "bold",
-              }}
-            >
-              OUR
-            </Typography>
-            <Typography
-              variant={isMobile ? "h4" : "h2"}
-              className="outlined"
-              sx={{
-                color: "transparent",
-                fontWeight: "bold",
-                textStroke: "1px #fff",
-                WebkitTextStroke: "1px #fff",
-              }}
-            >
-              BIM
-            </Typography>
-            <Typography
-              variant={isMobile ? "h4" : "h2"}
-              className="filled"
-              sx={{
-                color: "#fff",
-                fontWeight: "bold",
-              }}
-            >
-              SERVICES
-            </Typography>
-          </Box>
+            OUR BIM SERVICES
+          </Typography>
         </Box>
+
+        <Box
+          sx={{
+            width: isHovered ? "40%" : "120px",
+            height: "4px",
+            background: "linear-gradient(90deg, #3b82f6 0%, #06b6d4 100%)",
+            transition: "width 0.5s ease",
+            marginTop: 0,
+            paddingTop:0,
+            marginBottom:1,
+            marginLeft: "auto",
+            marginRight: "auto",
+          }}
+        />
 
         <Box
           display="grid"
           gridTemplateColumns={{
             xs: "1fr",
             sm: "repeat(2, 1fr)",
-            md: "repeat(3, 1fr)"
+            md: "repeat(3, 1fr)",
           }}
           gap={4}
           mb={6}
         >
           <StyledCard>
-            <CardContent sx={{ p: { xs: 2, md: 4 } }}>
-              <TitleTypography variant="h5" gutterBottom>
+            <CardContent sx={{ p: { xs: 2, md: 3 } }}>
+              <TitleTypography variant="h6" gutterBottom sx={{mb:1}}>
                 Why Choose BIM Technology?
               </TitleTypography>
               <List sx={{ p: 0 }}>
@@ -243,15 +241,23 @@ const Services = () => {
                   <ListItemStyled key={index}>
                     <ListItemText
                       primary={
-                        <Typography variant="subtitle1" fontWeight="600" color="primary.main">
+                        <Typography
+                          variant="subtitle2"
+                          fontWeight="600"
+                          color="primary.main"
+                        >
                           {`${index + 1}. ${item.split(":")[0]}`}
                         </Typography>
                       }
                       secondary={
-                        <Typography variant="body2" sx={{ mt: 1, color: "text.secondary" }}>
+                        <Typography
+                          variant="caption"
+                          sx={{ mt: 0, color: "text.secondary" }}
+                        >
                           {item.split(":")[1]}
                         </Typography>
                       }
+                      sx={{mt:0, mb:0}}
                     />
                   </ListItemStyled>
                 ))}
@@ -265,10 +271,14 @@ const Services = () => {
               image={chartImageUrl || "/placeholder.svg"}
               alt="BIM Chart"
               sx={{
-                height: 300,
-                objectFit: "contain",
+                width: "100%",
+                height: "auto",
+                objectFit: "cover",
                 p: 2,
-                backgroundColor: "rgba(0, 102, 255, 0.02)"
+                backgroundColor: "rgba(0, 102, 255, 0.02)",
+                position: "relative",
+                top: "50%",
+                transform: "translateY(-50%)",
               }}
             />
             {!chartImageUrl && (
@@ -281,24 +291,32 @@ const Services = () => {
           </StyledCard>
 
           <StyledCard>
-            <CardContent sx={{ p: { xs: 2, md: 4 } }}>
-              <TitleTypography variant="h5" gutterBottom>
+            <CardContent sx={{ p: { xs: 2, md: 3 } }}>
+              <TitleTypography variant="h6" gutterBottom sx={{mb:1}}> 
                 Advantages of BIM Technology
               </TitleTypography>
-              <List sx={{ p: 0 }}>
+              <List sx={{ p: 0}}>
                 {bimData?.advantages.map((item, index) => (
                   <ListItemStyled key={index}>
                     <ListItemText
                       primary={
-                        <Typography variant="subtitle1" fontWeight="600" color="primary.main">
+                        <Typography
+                          variant="subtitle2"
+                          fontWeight="600"
+                          color="primary.main"
+                        >
                           {item.split(":")[0]}
                         </Typography>
                       }
                       secondary={
-                        <Typography variant="body2" sx={{ mt: 1, color: "text.secondary" }}>
+                        <Typography
+                          variant="caption"
+                          sx={{ mt: 0, color: "text.secondary" }}
+                        >
                           {item.split(":")[1]}
                         </Typography>
                       }
+                      sx={{mt:0, mb:0}}
                     />
                   </ListItemStyled>
                 ))}
@@ -312,13 +330,18 @@ const Services = () => {
           gridTemplateColumns={{
             xs: "1fr",
             sm: "repeat(2, 1fr)",
-            md: "repeat(3, 1fr)"
+            md: "repeat(3, 1fr)",
           }}
           gap={4}
           my={5}
         >
           {servicesData.map((service, index) => (
-            <StyledCard key={index} onClick={() => handleRowClick(index)}>
+            <StyledCard
+              key={index}
+              ref={(el) => (serviceRefs.current[index] = el)}
+              className={`service-card ${service.title.replace(/\s+/g, '-').toLowerCase()}`}
+              onClick={() => handleRowClick(index)}
+            >
               <CardContent
                 sx={{
                   background: "linear-gradient(45deg, #0066FF, #00A3FF)",
@@ -359,16 +382,27 @@ const Services = () => {
                   />
                 )}
                 <CardContent sx={{ p: { xs: 2, md: 3 } }}>
-                  <Typography variant="body1" sx={{ mb: 2, color: "text.secondary" }}>
+                  <Typography
+                    variant="body1"
+                    sx={{ mb: 2, color: "text.secondary" }}
+                  >
                     {service.description}
                   </Typography>
                   <List sx={{ p: 0 }}>
                     {service.items.map((item, i) => (
                       <ListItemStyled key={i}>
-                        <ListItemText 
+                        <ListItemText
                           primary={
-                            <Typography variant="body2" sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                              <span style={{ color: "#0066FF" }}>⚡</span> {item}
+                            <Typography
+                              variant="body2"
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 1,
+                              }}
+                            >
+                              <span style={{ color: "#0066FF" }}>⚡</span>{" "}
+                              {item}
                             </Typography>
                           }
                         />

@@ -230,81 +230,9 @@ const Contact = () => {
   return (
     <Box position="relative" sx={{ minHeight: "100vh" }}>
       <StyledBackground />
-      <Container maxWidth="xl" sx={{ py: { xs: 4, md: 6 }, mb: 0 }}>
-        <Box
-          sx={{
-            background: "linear-gradient(45deg, rgba(0, 102, 255, 0.9), rgba(0, 163, 255, 0.9))",
-            borderRadius: { xs: 2, md: 4 },
-            boxShadow: "0 8px 32px rgba(0, 102, 255, 0.15)",
-            display: "inline-block",
-            px: { xs: 2, md: 4 },
-            py: { xs: 2, md: 3 },
-            mt: 3,
-            mb: 5,
-            ml: { xs: 0, md: 2 },
-            width: { xs: "100%", md: "auto" },
-          }}
-        >
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "flex-start",
-              alignItems: "center",
-              gap: isMobile ? 2 : 4,
-              py: 2,
-              flexWrap: "wrap",
-              "&:hover .filled": {
-                color: "transparent",
-                textStroke: "1px #fff",
-                WebkitTextStroke: "1px #fff",
-              },
-              "&:hover .outlined": {
-                color: "#fff",
-                textStroke: "none",
-                WebkitTextStroke: "none",
-              },
-              ".filled, .outlined": {
-                transition: "all 0.3s ease",
-              },
-            }}
-          >
-            <Typography
-              variant={isMobile ? "h4" : "h2"}
-              className="filled"
-              sx={{
-                color: "#fff",
-                fontWeight: "bold",
-              }}
-            >
-              GET
-            </Typography>
-            <Typography
-              variant={isMobile ? "h4" : "h2"}
-              className="outlined"
-              sx={{
-                color: "transparent",
-                fontWeight: "bold",
-                textStroke: "1px #fff",
-                WebkitTextStroke: "1px #fff",
-              }}
-            >
-              IN
-            </Typography>
-            <Typography
-              variant={isMobile ? "h4" : "h2"}
-              className="filled"
-              sx={{
-                color: "#fff",
-                fontWeight: "bold",
-              }}
-            >
-              TOUCH
-            </Typography>
-          </Box>
-        </Box>
-
-        <Box display="flex" flexWrap="wrap" gap={4} sx={{ mt: 4 }}>
-          <Box flex={1} minWidth={300}>
+      <Container maxWidth="xl" sx={{ py: { xs: 1, md: 2 }, mb: 0 }}>
+        <Box display="flex" flexWrap="wrap" gap={4} sx={{ mt: 1 }}>
+          <Box flex={1} minWidth={300} sx={{pt:0}}>
             <ContactCard>
               <CardContent sx={{ p: 4 }}>
                 <Typography

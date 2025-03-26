@@ -39,6 +39,8 @@ const StyledPageContainer = styled(Box)(({ theme }) => ({
   minHeight: "100vh",
   paddingTop: theme.spacing(4),
   paddingBottom: theme.spacing(8),
+  paddingTop:0,
+  marginTop:0
 }))
 
 const StyledHeader = styled(Box)(({ theme }) => ({
@@ -72,7 +74,8 @@ const StyledPreviewContainer = styled(Box)(({ theme }) => ({
   background: "linear-gradient(to right, rgba(255,255,255,0.95), rgba(245,249,255,0.95))",
   borderRadius: theme.spacing(2),
   padding: theme.spacing(2),
-  marginTop: theme.spacing(2),
+  marginTop: 0,
+  paddingTop:0
 }))
 
 const StyledVideoList = styled(List)(({ theme }) => ({
@@ -164,10 +167,10 @@ export default function Media() {
   }
 
   return (
-    <StyledPageContainer>
+    <StyledPageContainer sx={{mt:2}}>
       
         <Container maxWidth="xl">
-        <Box
+        {/* <Box
           sx={{
             background: "linear-gradient(45deg, rgba(0, 102, 255, 0.9), rgba(0, 163, 255, 0.9))",
             borderRadius: { xs: 2, md: 4 },
@@ -237,7 +240,7 @@ export default function Media() {
               GALLERY
             </Typography>
           </Box>
-        </Box>
+        </Box> */}
           
         </Container>
       
@@ -265,6 +268,8 @@ export default function Media() {
                     backgroundClip: "text",
                     WebkitBackgroundClip: "text",
                     color: "transparent",
+                    pt:0,
+                    mt:0
                   }}
                 >
                   {selectedVideo.title}

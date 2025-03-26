@@ -1,5 +1,5 @@
-import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import React, { useEffect } from 'react';
+import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 import Container from '@mui/material/Container';
@@ -26,6 +26,7 @@ function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <Router>
+        <ScrollToTop />
         <Container maxWidth={false} style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', marginTop:"70px", padding:"0px" }}>
           <Header />
           <main style={{ flexGrow: 1 }}>
@@ -45,6 +46,16 @@ function App() {
       </Router>
     </ThemeProvider>
   );
+}
+
+function ScrollToTop() {
+  const location = useLocation();
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, [location]);
+
+  return null;
 }
 
 export default App;

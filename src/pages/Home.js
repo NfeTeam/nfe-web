@@ -1,31 +1,23 @@
 import { useState, useEffect, useRef } from "react"
-import { Link as RouterLink } from "react-router-dom"
-import { Box, Typography, Button, Container, Card, CardContent, CardMedia, styled } from "@mui/material"
+import { Box, Typography, Button, Container, Card,styled } from "@mui/material"
 import { useTheme } from "@mui/material/styles"
 import BF from "../images/building-filled.png"
-import BNF from "../images/building.png"
-import Background from "../images/background-page-4.jpg"
 import { db, collection, getDoc, doc } from "../components/firebase"
 import getMediaUrl from "../components/MediaUrl"
 import AboutModal from "../components/AboutModal"
+import { useNavigate } from "react-router-dom"
 
 const ourServices = [
-  {
-    icon: BF,
-    mainService: "ARCHITECTURE BIM SERVICES",
-    subServices: ["VDC / BIM COORDINATION / CSD", "POINT CLOUD SCAN TO BIM"],
-  },
-  {
-    icon: BNF,
-    mainService: "STRUCTURAL BIM SERVICES",
-    subServices: ["4D SIMULATION / RENDERING", "VR / AR VDC"],
-  },
-  {
-    icon: BF,
-    mainService: "MEP BIM SERVICES",
-    subServices: ["5D COST / QUANTITY TAKE-OFF", "BIM DOCUMENTATION"],
-  },
-]
+  "ARCHITECTURE BIM SERVICES",
+  "STRUCTURAL BIM SERVICES",
+  "MEP BIM SERVICES",
+  "VDC / BIM COORDINATION / CSD",
+  "POINT CLOUD SCAN TO BIM",
+  "4D SIMULATION / RENDERING",
+  "VR / AR VDC",
+  "5D COST / QUANTITY TAKE-OFF",
+  "BIM DOCUMENTATION",
+];
 const StyledHeroSection = styled(Box)(({ theme }) => ({
   position: "relative",
   width: "100%",
@@ -99,7 +91,7 @@ const StyledDot = styled(Box)(({ theme, active }) => ({
 }))
 
 const StyledIntroSection = styled(Box)(({ theme }) => ({
-  background: "linear-gradient(45deg, rgba(0, 102, 255, 0.9), rgba(0, 163, 255, 0.9))",
+  background: 'linear-gradient(135deg, rgba(0, 102, 255, 0.9), rgba(0, 163, 255, 0.9))',
   color: "white",
   padding: theme.spacing(8, 0),
   position: "relative",
@@ -111,13 +103,31 @@ const StyledIntroSection = styled(Box)(({ theme }) => ({
     left: 0,
     right: 0,
     bottom: 0,
-    background: "linear-gradient(45deg, rgba(255,255,255,0.1) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.1) 75%, transparent 75%, transparent)",
-    backgroundSize: "100px 100px",
-    animation: "moveBackground 20s linear infinite",
+    background: 'linear-gradient(45deg, rgba(255,255,255,0.1) 25%, transparent 25%, transparent 50%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.1) 75%, transparent 75%, transparent)',
+    backgroundSize: '100px 100px',
+    animation: 'moveBackground 20s linear infinite',
+    opacity: 0.3,
+  },
+  "&::after": {
+    content: '""',
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    background: 'linear-gradient(45deg, rgba(0, 102, 255, 0.2), rgba(0, 163, 255, 0.2), rgba(0, 102, 255, 0.2))',
+    backgroundSize: '200% 200%',
+    animation: 'gradientShift 8s ease infinite',
+    zIndex: 0,
   },
   "@keyframes moveBackground": {
     "0%": { backgroundPosition: "0 0" },
     "100%": { backgroundPosition: "100px 100px" },
+  },
+  "@keyframes gradientShift": {
+    "0%": { backgroundPosition: "0% 50%" },
+    "50%": { backgroundPosition: "100% 50%" },
+    "100%": { backgroundPosition: "0% 50%" },
   },
 }))
 
@@ -137,18 +147,23 @@ const StyledServicesSection = styled(Box)(({ theme }) => ({
 }))
 
 const ServiceCard = styled(Card)(({ theme }) => ({
-  height: "100%",
-  display: "flex",
-  flexDirection: "column",
-  alignItems: "center",
-  padding: theme.spacing(4),
-  borderRadius: theme.spacing(2),
-  backgroundColor: "rgba(255, 255, 255, 0.95)",
-  border: "1px solid rgba(0, 102, 255, 0.1)",
-  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-  "&:hover": {
-    transform: "translateY(-8px)",
-    boxShadow: "0 12px 24px rgba(0, 102, 255, 0.15)",
+  height: 'auto',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  cursor:"pointer",
+  padding: theme.spacing(2),
+  borderRadius: theme.spacing(1),
+  background: 'linear-gradient(135deg, rgba(0, 102, 255, 0.9), rgba(0, 163, 255, 0.9))', // Adjusted gradient
+  border: 'none',
+  transition: 'all 0.3s ease',
+  '&:hover': {
+    transform: 'translateY(-10px) scale(1.05)',
+    boxShadow: '0 12px 24px rgba(0, 102, 255, 0.3)',
+    background: 'rgba(255, 255, 255, 0.9)', // Whitish background on hover
+    '& .MuiTypography-root': {
+      color: '#0077b6', // Blue text on hover
+    },
   },
 }))
 
@@ -168,25 +183,14 @@ const ServiceIcon = styled(Box)(({ theme }) => ({
 }))
 
 const ServiceTitle = styled(Typography)(({ theme }) => ({
-  fontSize: "1.5rem",
-  fontWeight: "bold",
-  background: "linear-gradient(45deg, #0066FF 30%, #00A3FF 90%)",
-  backgroundClip: "text",
-  WebkitBackgroundClip: "text",
-  color: "transparent",
-  textAlign: "center",
-  marginBottom: theme.spacing(3),
-  position: "relative",
-  "&::after": {
-    content: '""',
-    position: "absolute",
-    bottom: "-10px",
-    left: "50%",
-    transform: "translateX(-50%)",
-    width: "40px",
-    height: "3px",
-    background: "linear-gradient(45deg, #0066FF, #00A3FF)",
-    borderRadius: "2px",
+  fontSize: '1rem',
+  fontWeight: 'bolder',
+  color: '#ffffff', // White text for contrast
+  textAlign: 'center',
+  marginBottom: theme.spacing(1),
+  transition: 'color 0.3s ease',
+  '&:hover': {
+    color: 'inherit', // Remove individual hover effect
   },
 }))
 
@@ -218,7 +222,7 @@ const LearnMoreButton = styled(Button)(({ theme }) => ({
   borderRadius: theme.spacing(2),
   padding: theme.spacing(1.5, 4),
   textTransform: "none",
-  fontSize: "1.1rem",
+  fontSize: "1rem",
   fontWeight: 600,
   transition: "all 0.3s ease",
   backdropFilter: "blur(4px)",
@@ -238,6 +242,7 @@ const Home = () => {
   const videoRef = useRef(null)
   const playerRef = useRef(null)
   const theme = useTheme()
+  const navigate = useNavigate()
 
   useEffect(() => {
     const fetchSlidesData = async () => {
@@ -397,11 +402,15 @@ const Home = () => {
     return url || ''
   }
 
+  const navigateToService = (service) => {
+    navigate(`/services#${service.replace(/\s+/g, '-').toLowerCase()}`);
+  };
+
   return (
     <Box sx={{ overflow: "hidden" }}>
-      <AboutModal 
-        open={showAboutModal} 
-        onClose={() => setShowAboutModal(false)} 
+      <AboutModal
+        open={showAboutModal}
+        onClose={() => setShowAboutModal(false)}
       />
       <StyledHeroSection>
         {slides.length > 0 &&
@@ -426,28 +435,28 @@ const Home = () => {
           ) : (
             <Box
               sx={{
-                position: 'relative',
-                width: '100%',
-                height: '100%',
-                overflow: 'hidden',
-                backgroundColor: '#000',
+                position: "relative",
+                width: "100%",
+                height: "100%",
+                overflow: "hidden",
+                backgroundColor: "#000",
               }}
             >
               <Box
                 id="youtube-player"
                 sx={{
-                  position: 'absolute',
-                  top: '50%',
-                  left: '50%',
-                  width: '100%',
-                  height: '100%',
-                  transform: 'translate(-50%, -50%)',
-                  pointerEvents: 'none',
+                  position: "absolute",
+                  top: "50%",
+                  left: "50%",
+                  width: "100%",
+                  height: "100%",
+                  transform: "translate(-50%, -50%)",
+                  pointerEvents: "none",
                 }}
               />
             </Box>
           ))}
-       
+
         <StyledDotContainer>
           {slides.map((_, index) => (
             <StyledDot
@@ -460,9 +469,9 @@ const Home = () => {
       </StyledHeroSection>
 
       <StyledIntroSection>
-        <Container 
-          maxWidth="xl" 
-          sx={{ 
+        <Container
+          maxWidth="xl"
+          sx={{
             position: "relative",
             zIndex: 1,
             display: "flex",
@@ -473,24 +482,24 @@ const Home = () => {
           }}
         >
           <Box sx={{ flex: 1 }}>
-            <Typography 
-              variant="h2" 
-              gutterBottom 
-              sx={{ 
+            <Typography
+              variant="h2"
+              gutterBottom
+              sx={{
                 fontWeight: 700,
                 textShadow: "2px 2px 4px rgba(0,0,0,0.2)",
-                fontSize: { xs: "2rem", sm: "2.5rem", md: "3.5rem" },
+                fontSize: { xs: "2rem", sm: "2.25rem", md: "2.75rem" },
                 textAlign: { xs: "center", md: "left" },
                 mb: 4,
               }}
             >
               {homeData.title}
             </Typography>
-            <Typography 
-              variant="h5" 
-              sx={{ 
+            <Typography
+              variant="h5"
+              sx={{
                 maxWidth: "90%",
-                fontSize: { xs: "1rem", sm: "1.25rem", md: "1.5rem" },
+                fontSize: { xs: "1rem", sm: "1.15rem", md: "1.3rem" },
                 textAlign: { xs: "center", md: "left" },
                 lineHeight: 1.6,
                 textShadow: "1px 1px 2px rgba(0,0,0,0.1)",
@@ -498,11 +507,13 @@ const Home = () => {
             >
               {homeData.description}
             </Typography>
-            <Box sx={{ 
-              display: "flex", 
-              justifyContent: { xs: "center", md: "flex-start" },
-              mt: 4 
-            }}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: { xs: "center", md: "flex-start" },
+                mt: 4,
+              }}
+            >
               <LearnMoreButton onClick={() => setShowAboutModal(true)}>
                 Learn More About Us
               </LearnMoreButton>
@@ -541,171 +552,31 @@ const Home = () => {
           >
             Our Services
           </Typography>
+          <Box sx={{ textAlign: 'center', mb: 4 }}>
+            <img src={BF} alt="Building Icon" style={{ width: '80px', height: '80px' }} />
+          </Box>
           <Box
             sx={{
-              display: "grid",
+              display: 'grid',
               gridTemplateColumns: {
-                xs: "1fr",
-                sm: "repeat(2, 1fr)",
-                md: "repeat(3, 1fr)",
+                xs: '1fr',
+                sm: 'repeat(2, 1fr)',
+                md: 'repeat(3, 1fr)',
               },
               gap: { xs: 3, md: 4 },
-              px: { xs: 2, md: 0 },
+              px: { xs: 4, md: 8 },
             }}
           >
-            {
-  ourServices.map((service, index) => (
-    <ServiceCard
-      key={index}
-      sx={{
-        opacity: 0,
-        background: "rgba(255, 255, 255, 0.95)",
-        backdropFilter: "blur(10px)",
-        border: "1px solid rgba(0, 102, 255, 0.1)",
-        boxShadow: "0 10px 30px -5px rgba(0, 102, 255, 0.1)",
-        transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
-        animation: `fadeInUp 0.6s ease-out ${index * 0.2}s forwards`,
-        "&:hover": {
-          transform: "translateY(-10px)",
-          boxShadow: "0 20px 40px -5px rgba(0, 102, 255, 0.2)",
-          "& .service-icon": {
-            transform: "scale(1.1) rotate(5deg)",
-            filter: "drop-shadow(0 10px 15px rgba(0, 102, 255, 0.3))",
-          },
-          "& .service-title::after": {
-            width: "80px",
-            background: "linear-gradient(90deg, #0066FF, #00A3FF)",
-          },
-        },
-        "@keyframes fadeInUp": {
-          from: {
-            opacity: 0,
-            transform: "translateY(20px)",
-          },
-          to: {
-            opacity: 1,
-            transform: "translateY(0)",
-          },
-        },
-      }}
-    >
-      <ServiceIcon className="service-icon">
-        <Box
-          sx={{
-            background: "linear-gradient(135deg, #0066FF, #00A3FF)",
-            borderRadius: "20px",
-            padding: "20px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            transition: "all 0.3s ease",
-          }}
-        >
-          <img
-            src={service.icon || "/placeholder.svg"}
-            alt={service.mainService}
-            style={{
-              width: "50px",
-              height: "50px",
-              filter: "brightness(0) invert(1)",
-            }}
-          />
-        </Box>
-      </ServiceIcon>
-      <ServiceTitle
-        variant="h5"
-        className="service-title"
-        sx={{
-          position: "relative",
-          "&::after": {
-            content: '""',
-            position: "absolute",
-            bottom: "-10px",
-            left: "50%",
-            transform: "translateX(-50%)",
-            width: "40px",
-            height: "3px",
-            background: "linear-gradient(90deg, #0066FF, #00A3FF)",
-            borderRadius: "2px",
-            transition: "all 0.3s ease",
-          },
-        }}
-      >
-        {service.mainService}
-      </ServiceTitle>
-      <CardContent
-        sx={{
-          width: "100%",
-          padding: "24px 16px !important",
-          display: "flex",
-          flexDirection: "column",
-          gap: 2,
-        }}
-      >
-        {service.subServices.map((subService, idx) => (
-          <SubServiceButton
-            key={idx}
-            sx={{
-              opacity: 0,
-              position: "relative",
-              padding: "16px",
-              background: "linear-gradient(135deg, rgba(0, 102, 255, 0.05), rgba(0, 163, 255, 0.05))",
-              borderRadius: "12px",
-              border: "1px solid rgba(0, 102, 255, 0.1)",
-              fontSize: "0.95rem",
-              fontWeight: "800",
-              color: "#0066FF",
-              transition: "all 0.3s ease",
-              animation: `fadeIn 0.5s ease-out ${index * 0.2 + idx * 0.1}s forwards`,
-              overflow: "hidden",
-              "&::before": {
-                content: '""',
-                position: "absolute",
-                top: 0,
-                left: 0,
-                width: "100%",
-                height: "100%",
-                background: "linear-gradient(135deg, #0066FF, #00A3FF)",
-                opacity: 0,
-                transition: "opacity 0.3s ease",
-                zIndex: 0,
-              },
-              "&:hover": {
-                transform: "translateY(-3px)",
-                color: "#fff",
-                boxShadow: "0 8px 20px -5px rgba(0, 102, 255, 0.3)",
-                "&::before": {
-                  opacity: 1,
-                },
-                "& .sub-service-text": {
-                  position: "relative",
-                  zIndex: 1,
-                },
-              },
-              "@keyframes fadeIn": {
-                from: {
-                  opacity: 0,
-                  transform: "translateY(10px)",
-                },
-                to: {
-                  opacity: 1,
-                  transform: "translateY(0)",
-                },
-              },
-            }}
-          >
-            <span className="sub-service-text">{subService}</span>
-          </SubServiceButton>
-        ))}
-      </CardContent>
-    </ServiceCard>
-  ))
-}
+            {ourServices.map((service, index) => (
+              <ServiceCard key={index} onClick={() => navigateToService(service)}>
+                <ServiceTitle>{service}</ServiceTitle>
+              </ServiceCard>
+            ))}
           </Box>
         </Container>
       </StyledServicesSection>
     </Box>
-  )
+  );
 }
 
 export default Home

@@ -12,9 +12,10 @@ import {
   useMediaQuery,
   useTheme,
 } from "@mui/material";
-import { db, collection, getDocs } from "../components/firebase";
+import { db, collection, getDocs, doc, getDoc } from "../components/firebase";
 import Background from "../images/background-page.jpg";
 import getMediaUrl from "../components/MediaUrl";
+import VideoBanner from "../components/VideoBanner";
 
 const StyledBackground = styled(Box)({
   position: "absolute",
@@ -36,7 +37,7 @@ const StyledBackground = styled(Box)({
     right: 0,
     bottom: 0,
     backgroundColor: "rgba(255, 255, 255, 0.4)",
-  }
+  },
 });
 
 const StyledCard = styled(Card)(({ theme }) => ({
@@ -55,47 +56,51 @@ const StyledCard = styled(Card)(({ theme }) => ({
 }));
 
 const StyledTab = styled(Tab)(({ theme }) => ({
-  fontWeight: "bold",
+  fontWeight: 600,
   borderRadius: theme.spacing(2),
-  transition: "all 0.3s cubic-bezier(0.4, 0, 0.2, 1)",
+  transition: "all 0.3s ease-in-out",
   padding: {
-    xs: "8px 16px",
-    sm: "12px 24px",
-    md: "16px 40px"
+    xs: "6px 12px",
+    sm: "10px 20px",
+    md: "14px 30px",
   },
   minWidth: "auto",
   flexGrow: 1,
   maxWidth: {
-    xs: "110px",
-    sm: "200px",
-    md: "300px"
+    xs: "90px",
+    sm: "180px",
+    md: "270px",
   },
   marginRight: {
     xs: theme.spacing(1),
-    md: theme.spacing(3)
+    md: theme.spacing(3),
   },
   "&:last-child": {
     marginRight: 0,
   },
   "& .MuiTab-wrapper": {
     fontSize: "inherit",
+    fontWeight: 700,
   },
-  [theme.breakpoints.up('xs')]: {
+  [theme.breakpoints.up("xs")]: {
     fontSize: "0.9rem !important",
   },
-  [theme.breakpoints.up('sm')]: {
+  [theme.breakpoints.up("sm")]: {
     fontSize: "1.1rem !important",
   },
-  [theme.breakpoints.up('md')]: {
+  [theme.breakpoints.up("md")]: {
     fontSize: "1.4rem !important",
   },
+  backgroundColor: "rgba(0, 102, 255, 0.1)",
+  color: "#004080",
   "&.Mui-selected": {
     background: "linear-gradient(45deg, #0066FF, #00A3FF)",
     color: "#fff !important",
-    boxShadow: "0 4px 12px rgba(0, 102, 255, 0.2)",
+    boxShadow: "0 4px 12px rgba(0, 102, 255, 0.4)",
+    transform: "scale(1)",
   },
   "&:hover": {
-    backgroundColor: "rgba(0, 102, 255, 0.1)",
+    backgroundColor: "rgba(0, 102, 255, 0.2)",
     color: "#0066FF",
   },
 }));
@@ -107,7 +112,6 @@ const ProjectTitle = styled(Typography)(({ theme }) => ({
   background: "linear-gradient(45deg, #0066FF 30%, #00A3FF 90%)",
   backgroundClip: "text",
   WebkitBackgroundClip: "text",
-  color: "transparent",
 }));
 
 const ProjectDescription = styled(Typography)(({ theme }) => ({
@@ -142,9 +146,11 @@ const renderMedia = (project) => {
 const Projects = () => {
   const [projectData, setProjectData] = useState([]);
   const [activeTab, setActiveTab] = useState(0);
-
-  const theme = useTheme()
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"))
+  const [videoUrl, setVideoUrl] = useState("");
+  const [isVisible, setIsVisible] = useState(true);
+  const [description,setDescription] = useState("This section provides an overview of the projects, highlighting key features and objectives. This section provides an overview of the projects, highlighting key features and objectives. This section provides an overview of the projects, highlighting key features and objectives. This section provides an overview of the projects, highlighting key features and objectives. This section provides an overview of the projects, highlighting key features and objectives.")
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
   useEffect(() => {
     const fetchData = async () => {
@@ -158,6 +164,34 @@ const Projects = () => {
     };
 
     fetchData();
+  }, []);
+
+  useEffect(() => {
+    const fetchVideoUrl = async () => {
+      const videoDocRef = doc(db, "additionalVideos", "projectsVideo");
+      const videoDoc = await getDoc(videoDocRef);
+      if (videoDoc.exists()) {
+        const videoId = videoDoc
+          .data()
+          .videoUrl.split("/embed/")[1]
+          .split("?")[0];
+        setVideoUrl(
+          `https://www.youtube.com/embed/${videoId}?autoplay=1&loop=1&playlist=${videoId}&mute=1`
+        );
+      } else {
+        console.log("No such document!");
+      }
+    };
+
+    fetchVideoUrl();
+  }, []);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsVisible(false);
+    }, 10000);
+
+    return () => clearTimeout(timer);
   }, []);
 
   const completedProjects = projectData.filter(
@@ -177,75 +211,14 @@ const Projects = () => {
   return (
     <Box position="relative" sx={{ minHeight: "100vh" }}>
       <StyledBackground />
+      <VideoBanner videoUrl={videoUrl} title="OUR PROJECTS" description={description} />
       <Container maxWidth="xl" sx={{ py: { xs: 4, md: 6 }, mb: 0 }}>
         <Box
           sx={{
-            background: "linear-gradient(45deg, rgba(0, 102, 255, 0.9), rgba(0, 163, 255, 0.9))",
-            borderRadius: { xs: 2, md: 4 },
-            boxShadow: "0 8px 32px rgba(0, 102, 255, 0.15)",
-            display: "inline-block",
-            px: { xs: 2, md: 4 },
-            py: { xs: 2, md: 3 },
-            mt: 3,
-            mb: 5,
-            ml: { xs: 0, md: 2 },
-            width: { xs: "100%", md: "auto" },
-          }}
-        >
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "flex-start",
-              alignItems: "center",
-              gap: isMobile ? 2 : 4,
-              py: 2,
-              flexWrap: "wrap",
-              "&:hover .filled": {
-                color: "transparent",
-                textStroke: "1px #fff",
-                WebkitTextStroke: "1px #fff",
-              },
-              "&:hover .outlined": {
-                color: "#fff",
-                textStroke: "none",
-                WebkitTextStroke: "none",
-              },
-              ".filled, .outlined": {
-                transition: "all 0.3s ease",
-              },
-            }}
-          >
-            <Typography
-              variant={isMobile ? "h4" : "h2"}
-              className="filled"
-              sx={{
-                color: "#fff",
-                fontWeight: "bold",
-              }}
-            >
-              OUR
-            </Typography>
-            <Typography
-              variant={isMobile ? "h4" : "h2"}
-              className="outlined"
-              sx={{
-                color: "transparent",
-                fontWeight: "bold",
-                textStroke: "1px #fff",
-                WebkitTextStroke: "1px #fff",
-              }}
-            >
-              PROJECTS
-            </Typography>
-          </Box>
-        </Box>
-
-        <Box 
-          sx={{ 
-            width: "100%", 
-            display: "flex", 
+            width: "100%",
+            display: "flex",
             justifyContent: "center",
-            mb: 6,
+            mb: 0,
             overflow: "hidden",
             px: { xs: 1, sm: 2, md: 4 },
           }}
@@ -266,13 +239,6 @@ const Projects = () => {
                 gap: { xs: 1, sm: 2, md: 3 },
                 justifyContent: "center",
               },
-              "& .MuiTab-root": {
-                fontSize: {
-                  xs: "0.9rem",
-                  sm: "1.1rem",
-                  md: "1.4rem"
-                }
-              }
             }}
           >
             {["Completed", "Ongoing", "Upcoming"].map((label, index) => (
@@ -282,39 +248,40 @@ const Projects = () => {
         </Box>
 
         <Box>
-          {[completedProjects, ongoingProjects, upcomingProjects].map((projects, tabIndex) => (
-            activeTab === tabIndex && (
-              <Box
-                key={tabIndex}
-                display="grid"
-                gridTemplateColumns={{
-                  xs: "1fr",
-                  sm: "repeat(2, 1fr)",
-                  md: "repeat(3, 1fr)"
-                }}
-                gap={4}
-                sx={{
-                  opacity: 1,
-                  transform: "translateY(0)",
-                  transition: "all 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
-                }}
-              >
-                {projects.map((project) => (
-                  <StyledCard key={project.id}>
-                    {renderMedia(project)}
-                    <CardContent sx={{ p: { xs: 2, md: 3 } }}>
-                      <ProjectTitle variant="h6">
-                        {project.title}
-                      </ProjectTitle>
-                      <ProjectDescription variant="body2">
-                        {project.description}
-                      </ProjectDescription>
-                    </CardContent>
-                  </StyledCard>
-                ))}
-              </Box>
-            )
-          ))}
+          {[completedProjects, ongoingProjects, upcomingProjects].map(
+            (projects, tabIndex) =>
+              activeTab === tabIndex && (
+                <Box
+                  key={tabIndex}
+                  display="grid"
+                  gridTemplateColumns={{
+                    xs: "1fr",
+                    sm: "repeat(2, 1fr)",
+                    md: "repeat(3, 1fr)",
+                  }}
+                  gap={4}
+                  sx={{
+                    opacity: 1,
+                    transform: "translateY(0)",
+                    transition: "all 0.5s cubic-bezier(0.4, 0, 0.2, 1)",
+                  }}
+                >
+                  {projects.map((project) => (
+                    <StyledCard key={project.id}>
+                      {renderMedia(project)}
+                      <CardContent sx={{ p: { xs: 2, md: 3 } }}>
+                        <ProjectTitle variant="h6">
+                          {project.title}
+                        </ProjectTitle>
+                        <ProjectDescription variant="body2">
+                          {project.description}
+                        </ProjectDescription>
+                      </CardContent>
+                    </StyledCard>
+                  ))}
+                </Box>
+              )
+          )}
         </Box>
       </Container>
     </Box>

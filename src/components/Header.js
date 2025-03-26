@@ -66,6 +66,11 @@ const Header = () => {
     }
   }, [activeIndex])
 
+  useEffect(() => {
+    const currentIndex = navItems.findIndex(item => item.path === location.pathname);
+    setActiveIndex(currentIndex);
+  }, [location.pathname]);
+
   const handleDrawerToggle = () => {
     setMobileOpen(!mobileOpen)
   }
@@ -116,10 +121,12 @@ const Header = () => {
               },
             }}
           >
-            <Box sx={{ minWidth: 40, color: "inherit" }}>
+            <Box sx={{ display: 'flex', alignItems: 'center' }}>
               {item.icon}
+              <Typography variant="caption" sx={{ color: 'inherit', ml: 1 }}>
+                {item.name}
+              </Typography>
             </Box>
-            <ListItemText primary={item.name} sx={{ color: "inherit" }} />
           </ListItem>
         ))}
       </List>
@@ -218,7 +225,12 @@ const Header = () => {
                 }}
                 title={item.name}
               >
-                {item.icon}
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                  {item.icon}
+                  <Typography variant="caption" sx={{ color: 'inherit', mt: 0.5 }}>
+                    {item.name}
+                  </Typography>
+                </Box>
               </IconButton>
             ))}
             <Box
