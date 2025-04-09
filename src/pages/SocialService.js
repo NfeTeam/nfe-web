@@ -16,6 +16,7 @@ import { db, collection, getDocs, doc, getDoc } from "../components/firebase";
 import getMediaUrl from "../components/MediaUrl";
 import Background from "../images/background-page-3.jpg";
 import VideoBanner from "../components/VideoBanner";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
 
 const BackgroundDiv = styled('div')({
   position: "absolute",
@@ -117,6 +118,18 @@ const ServiceTitle = styled(Typography)(({ theme }) => ({
 const ServiceDescription = styled(Typography)(({ theme }) => ({
   color: theme.palette.text.secondary,
   lineHeight: 1.6,
+}));
+
+const ServiceLocation = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1),
+  marginBottom: theme.spacing(1),
+  color: theme.palette.text.secondary,
+  '& .MuiSvgIcon-root': {
+    fontSize: '1.1rem',
+    color: theme.palette.primary.main,
+  },
 }));
 
 const StyledCardMedia = styled(CardMedia)(({ theme }) => ({
@@ -256,6 +269,14 @@ const SocialService = () => {
                       <ServiceTitle variant="h6">
                         {service.title}
                       </ServiceTitle>
+                      {service.location && (
+                        <ServiceLocation>
+                          <LocationOnIcon fontSize="small" />
+                          <Typography variant="body2" component="span">
+                            {service.location}
+                          </Typography>
+                        </ServiceLocation>
+                      )}
                       <ServiceDescription variant="body2">
                         {service.description}
                       </ServiceDescription>

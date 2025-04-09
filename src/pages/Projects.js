@@ -16,6 +16,7 @@ import { db, collection, getDocs, doc, getDoc } from "../components/firebase";
 import Background from "../images/background-page.jpg";
 import getMediaUrl from "../components/MediaUrl";
 import VideoBanner from "../components/VideoBanner";
+import LocationOnIcon from "@mui/icons-material/LocationOn";
 
 const StyledBackground = styled(Box)({
   position: "absolute",
@@ -117,6 +118,18 @@ const ProjectTitle = styled(Typography)(({ theme }) => ({
 const ProjectDescription = styled(Typography)(({ theme }) => ({
   color: theme.palette.text.secondary,
   lineHeight: 1.6,
+}));
+
+const ProjectLocation = styled(Box)(({ theme }) => ({
+  display: 'flex',
+  alignItems: 'center',
+  gap: theme.spacing(1),
+  marginBottom: theme.spacing(1),
+  color: theme.palette.text.secondary,
+  '& .MuiSvgIcon-root': {
+    fontSize: '1.1rem',
+    color: theme.palette.primary.main,
+  },
 }));
 
 const renderMedia = (project) => {
@@ -273,6 +286,14 @@ const Projects = () => {
                         <ProjectTitle variant="h6">
                           {project.title}
                         </ProjectTitle>
+                        {project.location && (
+                          <ProjectLocation>
+                            <LocationOnIcon fontSize="small" />
+                            <Typography variant="body2" component="span">
+                              {project.location}
+                            </Typography>
+                          </ProjectLocation>
+                        )}
                         <ProjectDescription variant="body2">
                           {project.description}
                         </ProjectDescription>

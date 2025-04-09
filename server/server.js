@@ -11,11 +11,52 @@ const app = express();
 const port = 5000;
 const allowedOrigins = ['http://localhost:3000', 'https://nfe-web-inky.vercel.app'];
 
+// Strict CORS configuration
 app.use(cors({
-    origin: allowedOrigins, // Allow only your frontend domain
-    methods: ['GET', 'POST'], // Allowed methods
-    allowedHeaders: ['Content-Type'] // Allowed headers
-  }));
+  origin: function(origin, callback) {
+    // Block requests with no origin (like direct browser access)
+    if (!origin) {
+      return callback(new Error('Not allowed by CORS'), false);
+    }
+    
+    if (allowedOrigins.indexOf(origin) === -1) {
+      return callback(new Error('Not allowed by CORS'), false);
+    }
+    return callback(null, true);
+  },
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true,
+  maxAge: 86400 // 24 hours
+}));
+
+// Middleware to block direct browser access
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  const referer = req.headers.referer;
+  
+  // Block requests without proper origin or referer
+  if (!origin || !referer) {
+    return res.status(403).json({ error: 'Access denied: Direct browser access not allowed' });
+  }
+  
+  // Check if the origin is in the allowed list
+  if (!allowedOrigins.includes(origin)) {
+    return res.status(403).json({ error: 'Access denied: Origin not allowed' });
+  }
+  
+  // Check if the referer starts with an allowed origin
+  const isAllowedReferer = allowedOrigins.some(allowedOrigin => 
+    referer.startsWith(allowedOrigin)
+  );
+  
+  if (!isAllowedReferer) {
+    return res.status(403).json({ error: 'Access denied: Referer not allowed' });
+  }
+  
+  next();
+});
+
 // Configure storage for file uploads (resume and CV)
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -78,6 +119,23 @@ app.post('/send-email', upload.fields([{ name: 'resume' }, { name: 'cv' }]), (re
   });
 });
 
+const firebaseConfig = {
+  apiKey: process.env.REACT_APP_API_KEY,
+  authDomain: process.env.REACT_APP_AUTH_DOMAIN,
+  databaseURL: process.env.REACT_APP_DATABASE_URL,
+  projectId: process.env.REACT_APP_PROJECT_ID,
+  storageBucket: process.env.REACT_APP_STORAGE_BUCKET,
+  messagingSenderId: process.env.REACT_APP_MESSAGING_SENDER_ID,
+  appId: process.env.REACT_APP_APP_ID,
+  measurementId: process.env.REACT_APP_MEASUREMENT_ID,
+};
+
+// Endpoint to get Firebase configuration
+app.get('/firebase-config', (req, res) => {
+  res.status(200).json(firebaseConfig);
+});
+
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
+

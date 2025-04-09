@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -13,6 +13,7 @@ import Contact from './pages/Contact';
 import Careers from './pages/Careers';
 import Media from './pages/Media';
 import WhatsAppBubbleComponent from './components/WhatsAppBubble';
+import { initializeFirebase } from './components/firebase';
 
 // Define a custom theme with a catchy font
 const theme = createTheme({
@@ -22,6 +23,43 @@ const theme = createTheme({
 });
 
 function App() {
+  const [firebaseConfig, setFirebaseConfig] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    // Fetch Firebase configuration from the server
+    const fetchFirebaseConfig = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/firebase-config');
+        if (!response.ok) {
+          throw new Error('Failed to fetch Firebase configuration');
+        }
+        const config = await response.json();
+        setFirebaseConfig(config);
+        
+        // Initialize Firebase with the fetched configuration
+        initializeFirebase(config);
+        
+        setLoading(false);
+      } catch (err) {
+        console.error('Error fetching Firebase configuration:', err);
+        setError(err.message);
+        setLoading(false);
+      }
+    };
+    fetchFirebaseConfig();
+    setFirebaseConfig(null)
+  }, []);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (error) {
+    return <div>Error: {error}</div>;
+  }
+
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />

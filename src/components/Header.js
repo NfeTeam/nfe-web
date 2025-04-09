@@ -17,7 +17,7 @@ import {
 import {
   Menu as MenuIcon,
   Home as HomeIcon,
-  Groups as GroupsIcon,
+  EngineeringRounded as GroupsIcon,
   LocationCity as LocationCityIcon,
   VolunteerActivism as VolunteerActivismIcon,
   PermMedia as PermMediaIcon,
