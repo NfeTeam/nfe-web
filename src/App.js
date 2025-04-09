@@ -23,42 +23,42 @@ const theme = createTheme({
 });
 
 function App() {
-  const [firebaseConfig, setFirebaseConfig] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  // const [firebaseConfig, setFirebaseConfig] = useState(null);
+  // const [loading, setLoading] = useState(true);
+  // const [error, setError] = useState(null);
 
-  useEffect(() => {
-    // Fetch Firebase configuration from the server
-    const fetchFirebaseConfig = async () => {
-      try {
-        const response = await fetch('http://localhost:5000/firebase-config');
-        if (!response.ok) {
-          throw new Error('Failed to fetch Firebase configuration');
-        }
-        const config = await response.json();
-        setFirebaseConfig(config);
+  // useEffect(() => {
+  //   // Fetch Firebase configuration from the server
+  //   const fetchFirebaseConfig = async () => {
+  //     try {
+  //       const response = await fetch('http://localhost:5000/firebase-config');
+  //       if (!response.ok) {
+  //         throw new Error('Failed to fetch Firebase configuration');
+  //       }
+  //       const config = await response.json();
+  //       setFirebaseConfig(config);
         
-        // Initialize Firebase with the fetched configuration
-        initializeFirebase(config);
+  //       // Initialize Firebase with the fetched configuration
+  //       initializeFirebase(config);
         
-        setLoading(false);
-      } catch (err) {
-        console.error('Error fetching Firebase configuration:', err);
-        setError(err.message);
-        setLoading(false);
-      }
-    };
-    fetchFirebaseConfig();
-    setFirebaseConfig(null)
-  }, []);
+  //       setLoading(false);
+  //     } catch (err) {
+  //       console.error('Error fetching Firebase configuration:', err);
+  //       setError(err.message);
+  //       setLoading(false);
+  //     }
+  //   };
+  //   fetchFirebaseConfig();
+  //   setFirebaseConfig(null)
+  // }, []);
 
-  if (loading) {
-    return <div>Loading...</div>;
-  }
+  // if (loading) {
+  //   return <div>Loading...</div>;
+  // }
 
-  if (error) {
-    return <div>Error: {error}</div>;
-  }
+  // if (error) {
+  //   return <div>Error: {error}</div>;
+  // }
 
   return (
     <ThemeProvider theme={theme}>

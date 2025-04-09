@@ -2,17 +2,20 @@ import { initializeApp } from "firebase/app";
 import { getFirestore, collection, getDocs, doc, getDoc } from "firebase/firestore";
 
 // Initialize Firebase with the configuration from the server
-let app = null;
-let db = null;
-
-// Function to initialize Firebase with the configuration from the server
-export const initializeFirebase = (firebaseConfig) => {
-  if (!app) {
-    app = initializeApp(firebaseConfig);
-    db = getFirestore(app);
-  }
-  return { app, db };
+// Your Firebase config object (replace with your actual Firebase config)
+const firebaseConfig = {
+  apiKey: process.env.REACT_APP_API_KEY,
+  authDomain: process.env.REACT_APP_AUTH_DOMAIN,
+  databaseURL: process.env.REACT_APP_DATABASE_URL,
+  projectId: process.env.REACT_APP_PROJECT_ID,
+  storageBucket: process.env.REACT_APP_STORAGE_BUCKET,
+  messagingSenderId: process.env.REACT_APP_MESSAGING_SENDER_ID,
+  appId: process.env.REACT_APP_APP_ID,
+  measurementId: process.env.REACT_APP_MEASUREMENT_ID,
 };
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
 // Export Firebase services
 export { db, collection, getDocs, doc, getDoc };
