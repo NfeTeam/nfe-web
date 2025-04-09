@@ -12,24 +12,30 @@ const port = 5000;
 const allowedOrigins = ['http://localhost:3000', 'https://nfe-web-inky.vercel.app'];
 
 // Strict CORS configuration
-app.use(cors({
-  origin: function(origin, callback) {
-    // Block requests with no origin (like direct browser access)
-    if (!origin) {
-      return callback(new Error('Not allowed by CORS'), false);
-    }
+// app.use(cors({
+//   origin: function(origin, callback) {
+//     // Block requests with no origin (like direct browser access)
+//     if (!origin) {
+//       return callback(new Error('Not allowed by CORS'), false);
+//     }
     
-    if (allowedOrigins.indexOf(origin) === -1) {
-      return callback(new Error('Not allowed by CORS'), false);
-    }
-    return callback(null, true);
-  },
-  methods: ['GET', 'POST'],
-  allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true,
-  maxAge: 86400 // 24 hours
-}));
+//     if (allowedOrigins.indexOf(origin) === -1) {
+//       return callback(new Error('Not allowed by CORS'), false);
+//     }
+//     return callback(null, true);
+//   },
+//   methods: ['GET', 'POST'],
+//   allowedHeaders: ['Content-Type', 'Authorization'],
+//   credentials: true,
+//   maxAge: 86400 // 24 hours
+// }));
 
+
+app.use(cors({
+  origin: allowedOrigins, // Allow only your frontend domain
+  methods: ['GET', 'POST'], // Allowed methods
+  allowedHeaders: ['Content-Type'] // Allowed headers
+}));
 // Middleware to block direct browser access
 app.use((req, res, next) => {
   const origin = req.headers.origin;
