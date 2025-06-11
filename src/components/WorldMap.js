@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react"
 import { MapContainer, TileLayer, Marker, Popup, Tooltip } from "react-leaflet"
 import { Box, Typography, Paper } from "@mui/material"
-import Grid from "@mui/material/Grid2"
 import { styled } from "@mui/system"
 import { Business, Public, Work, People } from "@mui/icons-material"
 import { collection, doc, getDoc } from "firebase/firestore"
@@ -188,9 +187,9 @@ export default function WorldMap() {
         </MapContainerWrapper>
       </Paper>
 
-      <Grid container spacing={2} sx={{ m: 1 }}>
+      <Box sx={{ display: "flex", flexWrap: "wrap", justifyContent: "center", gap: 2, m: 1 }}>
         {stats.map((stat, index) => (
-          <Grid item xs={6} md={3} key={index}>
+          <Box key={index} sx={{ flexGrow: 1, flexBasis: { xs: 'calc(50% - 16px)', md: 'calc(25% - 16px)' }, maxWidth: { xs: 'calc(50% - 16px)', md: 'calc(25% - 16px)' } }}>
             <StyledPaper elevation={1}>
               <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                 <Box sx={{ fontSize: "3rem", display: "flex", alignItems: "center" }}>{getIcon(stat.label)}</Box>
@@ -202,9 +201,9 @@ export default function WorldMap() {
                 </Box>
               </Box>
             </StyledPaper>
-          </Grid>
+          </Box>
         ))}
-      </Grid>
+      </Box>
     </Box>
   )
 }
