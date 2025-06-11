@@ -16,6 +16,8 @@ import {
   useTheme,
   Button,
   Box,
+  DialogActions,
+  IconButton,
 } from "@mui/material"
 import { styled } from "@mui/material/styles"
 import { db, collection, getDocs } from "../components/firebase"
@@ -23,6 +25,8 @@ import { ApplyModal } from "./ApplyModal"
 import { JobDetailsModal } from "./JobDetailsModal"
 import axios from "axios"
 import Background from "../images/background-page.jpg"
+import CheckCircleIcon from '@mui/icons-material/CheckCircle'
+import ErrorIcon from '@mui/icons-material/Error'
 
 const BackgroundDiv = styled('div')({
   position: "absolute",
@@ -119,6 +123,51 @@ const StyledTextField = styled(TextField)(({ theme }) => ({
   },
 }))
 
+const AlertDialog = styled(Dialog)(({ theme }) => ({
+  '& .MuiDialog-paper': {
+    borderRadius: theme.spacing(2),
+    padding: theme.spacing(2),
+    minWidth: '300px',
+    maxWidth: '400px',
+    textAlign: 'center',
+    background: 'linear-gradient(135deg, rgba(255,255,255,0.95), rgba(255,255,255,0.98))',
+    boxShadow: '0 8px 32px rgba(0, 102, 255, 0.12)',
+  },
+}))
+
+const AlertIcon = styled(Box)(({ theme, type }) => ({
+  display: 'flex',
+  justifyContent: 'center',
+  marginBottom: theme.spacing(2),
+  '& svg': {
+    fontSize: '48px',
+    color: type === 'success' ? '#4CAF50' : '#f44336',
+  },
+}))
+
+const AlertTitle = styled(Typography)(({ theme }) => ({
+  fontWeight: 600,
+  marginBottom: theme.spacing(1),
+  color: theme.palette.text.primary,
+}))
+
+const AlertMessage = styled(Typography)(({ theme }) => ({
+  color: theme.palette.text.secondary,
+  marginBottom: theme.spacing(2),
+}))
+
+const AlertButton = styled(Button)(({ theme }) => ({
+  borderRadius: theme.spacing(1.5),
+  padding: theme.spacing(1, 3),
+  textTransform: 'none',
+  fontWeight: 600,
+  background: 'linear-gradient(45deg, #0066FF, #00A3FF)',
+  color: 'white',
+  '&:hover': {
+    background: 'linear-gradient(45deg, #0052CC, #0088FF)',
+  },
+}))
+
 const Careers = () => {
   const [jobPostings, setJobPostings] = useState([])
   const [selectedJob, setSelectedJob] = useState(null)
@@ -133,6 +182,12 @@ const Careers = () => {
   const [showApplyModal, setShowApplyModal] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
+  const [alertDialog, setAlertDialog] = useState({
+    open: false,
+    type: 'success',
+    title: '',
+    message: '',
+  })
 
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down("md"))
@@ -191,24 +246,38 @@ const Careers = () => {
 
       try {
         setIsSubmitting(true);
-        const response = await axios.post("http://localhost:5000/send-email", formDataToSubmit, {
+        const response = await axios.post("https://nfe-back-git-master-nfe-teams-projects.vercel.app/api/send-email", formDataToSubmit, {
           headers: {
             "Content-Type": "multipart/form-data",
           },
         });
 
         console.log("Form submitted:", response.data);
-        alert("Application submitted successfully!");
+        setAlertDialog({
+          open: true,
+          type: 'success',
+          title: 'Success!',
+          message: 'Application submitted successfully!',
+        });
         setShowApplyModal(false);
       } catch (error) {
         console.error("Error submitting form:", error);
-        alert("Failed to submit application. Please try again later.");
+        setAlertDialog({
+          open: true,
+          type: 'error',
+          title: 'Error',
+          message: 'Failed to submit application. Please try again later.',
+        });
       } finally {
         setIsSubmitting(false);
       }
     },
     [formData, selectedJob, setShowApplyModal]
   );
+
+  const handleCloseAlert = () => {
+    setAlertDialog(prev => ({ ...prev, open: false }));
+  };
 
   return (
     <Box position="relative" sx={{ minHeight: "100vh" }}>
@@ -465,6 +534,30 @@ const Careers = () => {
           </>
         )}
       </Container>
+
+      <AlertDialog
+        open={alertDialog.open}
+        onClose={handleCloseAlert}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogContent>
+          <AlertIcon type={alertDialog.type}>
+            {alertDialog.type === 'success' ? <CheckCircleIcon /> : <ErrorIcon />}
+          </AlertIcon>
+          <AlertTitle variant="h6" id="alert-dialog-title">
+            {alertDialog.title}
+          </AlertTitle>
+          <AlertMessage variant="body1" id="alert-dialog-description">
+            {alertDialog.message}
+          </AlertMessage>
+        </DialogContent>
+        <DialogActions sx={{ justifyContent: 'center', pb: 2 }}>
+          <AlertButton onClick={handleCloseAlert} autoFocus>
+            OK
+          </AlertButton>
+        </DialogActions>
+      </AlertDialog>
     </Box>
   )
 }
